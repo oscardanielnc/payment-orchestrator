@@ -118,3 +118,55 @@ model PaymentAttempt {
   @@index([chargeId, createdAt])
   @@map("payment_attempts")
 }
+
+/// One receiving address per crypto payment attempt, derived from the xpub (ADR 0010).
+model DepositAddress {
+  id              String          @id @db.Uuid
+  network         String
+  address         String
+  /// Lowercase 20-byte hex: how chain events name the recipient.
+  matchKey        String          @map("match_key")
+  derivationIndex Int             @map("derivation_index")
+  attemptId       String          @unique @map("attempt_id") @db.Uuid
+  chargeId        String          @map("charge_id") @db.Uuid
+  organizationId  String          @map("organization_id") @db.Uuid
+  currency        String          @db.VarChar(10)
+  expectedAmount  Decimal         @map("expected_amount") @db.Decimal(78, 0)
+  receivedAmount  Decimal         @map("received_amount") @db.Decimal(78, 0)
+  createdAt       DateTime        @map("created_at") @db.Timestamptz(3)
+  version         Int
+  transfers       ChainTransfer[]
+
+  @@unique([network, address])
+  @@unique([network, matchKey])
+  @@unique([network, derivationIndex])
+  @@map("deposit_addresses")
+}
+
+/// Every confirmed transfer applied to a deposit. The unique key makes re-reads harmless.
+model ChainTransfer {
+  id               String         @id @default(uuid()) @db.Uuid
+  network          String
+  txHash           String         @map("tx_hash")
+  eventIndex       Int            @map("event_index")
+  depositAddressId String         @map("deposit_address_id") @db.Uuid
+  fromMatchKey     String         @map("from_match_key")
+  amount           Decimal        @db.Decimal(78, 0)
+  blockNumber      BigInt         @map("block_number")
+  blockTimestamp   DateTime       @map("block_timestamp") @db.Timestamptz(3)
+  recordedAt       DateTime       @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  depositAddress   DepositAddress @relation(fields: [depositAddressId], references: [id])
+
+  @@unique([network, txHash, eventIndex])
+  @@index([depositAddressId])
+  @@map("chain_transfers")
+}
+
+/// Where each network's watcher resumes.
+model WatcherCursor {
+  network   String   @id
+  cursor    String
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("watcher_cursors")
+}

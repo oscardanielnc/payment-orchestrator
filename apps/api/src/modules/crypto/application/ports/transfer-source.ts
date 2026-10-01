@@ -1,0 +1,14 @@
+import type { ChainTransfer } from '../../domain/chain-transfer';
+import type { CryptoNetwork } from '../../domain/network';
+
+export interface TransferBatch {
+  transfers: ChainTransfer[];
+  /** Where to resume next time. Re-reading a little is fine: transfers are deduplicated. */
+  cursor: string;
+}
+
+/** Reads confirmed (final) transfers of the watched token from a chain (ADR 0010). */
+export abstract class TransferSource {
+  abstract readonly network: CryptoNetwork;
+  abstract fetchConfirmedSince(cursor: string | null): Promise<TransferBatch>;
+}
