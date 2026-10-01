@@ -38,3 +38,10 @@ Rules the linter cannot enforce.
 
 - Domain errors extend `DomainError` with a stable `code` (`<entity>.<problem>`)
 - HTTP statuses are mapped only in `ProblemDetailsFilter`; responses follow RFC 9457 with `code`
+
+## API
+
+- Request and response shapes live in `packages/contracts` (Zod); controllers validate with `ZodValidationPipe`
+- Money is a string of minor units in JSON, `bigint` in code, `NUMERIC(78,0)` in Postgres
+- Endpoints that create or move money use `IdempotencyInterceptor` and therefore require `Idempotency-Key`
+- Lists use keyset pagination: `?limit=&cursor=` → `{ data, nextCursor }`

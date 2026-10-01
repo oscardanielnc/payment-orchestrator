@@ -1,6 +1,3 @@
-import { Clock } from '../../../shared/application/ports/clock';
-import { IdGenerator } from '../../../shared/application/ports/id-generator';
-import { TransactionRunner } from '../../../shared/application/ports/transaction-runner';
 import { ApiKeyEnvironment } from '../application/ports/api-key-environment';
 import { ApiKeySecrets } from '../application/ports/api-key-secrets';
 import { ApiKeyRepository } from '../application/ports/api-key.repository';
@@ -75,31 +72,6 @@ export class FakeApiKeySecrets extends ApiKeySecrets {
 
   matches(secret: string, secretHash: string): boolean {
     return this.hash(secret) === secretHash;
-  }
-}
-
-export class FixedClock extends Clock {
-  constructor(public current = new Date('2026-10-01T12:00:00Z')) {
-    super();
-  }
-
-  now(): Date {
-    return this.current;
-  }
-}
-
-export class SequentialIdGenerator extends IdGenerator {
-  private counter = 0;
-
-  uuid(): string {
-    this.counter += 1;
-    return `00000000-0000-4000-8000-${String(this.counter).padStart(12, '0')}`;
-  }
-}
-
-export class ImmediateTransactionRunner extends TransactionRunner {
-  run<T>(work: () => Promise<T>): Promise<T> {
-    return work();
   }
 }
 

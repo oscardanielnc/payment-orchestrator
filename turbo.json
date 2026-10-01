@@ -8,17 +8,17 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["db:generate"]
+      "dependsOn": ["^build", "db:generate"]
     },
     "lint": {
-      "dependsOn": ["db:generate"]
+      "dependsOn": ["^build", "db:generate"]
     },
     "typecheck": {
       "dependsOn": ["^build", "db:generate"]
     },
     "test": {
       "outputs": ["coverage/**"],
-      "dependsOn": ["db:generate"]
+      "dependsOn": ["^build", "db:generate"]
     },
     "db:generate": {
       "outputs": ["src/generated/**"],
