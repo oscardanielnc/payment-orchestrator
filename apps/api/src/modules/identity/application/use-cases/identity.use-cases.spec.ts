@@ -5,12 +5,14 @@ import {
   InvalidOrganizationNameError,
 } from '../../domain/errors';
 import {
-  FakeApiKeySecrets,
   FixedClock,
   ImmediateTransactionRunner,
+  SequentialIdGenerator,
+} from '../../../../shared/testing/fakes';
+import {
+  FakeApiKeySecrets,
   InMemoryApiKeyRepository,
   InMemoryOrganizationRepository,
-  SequentialIdGenerator,
   testEnvironment,
 } from '../../testing/fakes';
 import { ApiKeyIssuer } from '../services/api-key-issuer';

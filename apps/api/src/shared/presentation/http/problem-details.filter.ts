@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { DomainError } from '../../domain/domain-error';
+import { HttpProblem } from './http-problems';
 
 /** RFC 9457 body. `code` is the stable extension clients branch on. */
 export interface ProblemDetails {
@@ -17,6 +18,7 @@ export interface ProblemDetails {
   detail?: string;
   instance: string;
   code: string;
+  [extension: string]: unknown;
 }
 
 /** The one place where domain errors become HTTP statuses. Unlisted domain errors are 422. */
@@ -26,6 +28,11 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
   'api_key.invalid_name': HttpStatus.BAD_REQUEST,
   'organization.not_found': HttpStatus.NOT_FOUND,
   'organization.invalid_name': HttpStatus.BAD_REQUEST,
+  'charge.not_found': HttpStatus.NOT_FOUND,
+  'charge.invalid_amount': HttpStatus.BAD_REQUEST,
+  'charge.invalid_cursor': HttpStatus.BAD_REQUEST,
+  'money.unsupported_currency': HttpStatus.BAD_REQUEST,
+  'concurrency.conflict': HttpStatus.CONFLICT,
 };
 
 const TITLES: Record<number, string> = {
@@ -55,6 +62,12 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     if (exception instanceof DomainError) {
       const status = DOMAIN_ERROR_STATUS[exception.code] ?? HttpStatus.UNPROCESSABLE_ENTITY;
       return this.problem(status, exception.code, instance, exception.message);
+    }
+    if (exception instanceof HttpProblem) {
+      return {
+        ...this.problem(exception.status, exception.code, instance, exception.message),
+        ...exception.extensions,
+      };
     }
     if (exception instanceof HttpException) {
       const status = exception.getStatus();

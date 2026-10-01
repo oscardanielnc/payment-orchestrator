@@ -14,6 +14,7 @@ model Organization {
   name      String
   createdAt DateTime @map("created_at") @db.Timestamptz(3)
   apiKeys   ApiKey[]
+  charges   Charge[]
 
   @@map("organizations")
 }
@@ -31,4 +32,61 @@ model ApiKey {
 
   @@index([organizationId])
   @@map("api_keys")
+}
+
+enum ChargeStatus {
+  pending
+  processing
+  succeeded
+  failed
+  expired
+}
+
+/// Amounts are integers in the currency's minor unit (ADR 0005). `version` backs optimistic locking.
+model Charge {
+  id             String       @id @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  amount         Decimal      @db.Decimal(78, 0)
+  currency       String       @db.VarChar(10)
+  status         ChargeStatus
+  description    String?
+  reference      String?
+  expiresAt      DateTime     @map("expires_at") @db.Timestamptz(3)
+  createdAt      DateTime     @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @map("updated_at") @db.Timestamptz(3)
+  version        Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, createdAt(sort: Desc), id(sort: Desc)])
+  @@map("charges")
+}
+
+/// Written in the same transaction as the change; a relay publishes and marks them (ADR 0008).
+model OutboxEvent {
+  id             String    @id @db.Uuid
+  type           String
+  aggregateType  String    @map("aggregate_type")
+  aggregateId    String    @map("aggregate_id")
+  organizationId String    @map("organization_id") @db.Uuid
+  payload        Json
+  occurredAt     DateTime  @map("occurred_at") @db.Timestamptz(3)
+  publishedAt    DateTime? @map("published_at") @db.Timestamptz(3)
+
+  @@index([publishedAt, occurredAt])
+  @@map("outbox_events")
+}
+
+/// One row per (scope, key). Claimed and completed inside the request's transaction (ADR 0007).
+model IdempotencyKey {
+  scope          String
+  key            String
+  requestHash    String   @map("request_hash")
+  responseStatus Int?     @map("response_status")
+  /// Exact JSON text: JSONB would reorder keys and break byte-identical replays.
+  responseBody   String?  @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([scope, key])
+  @@index([createdAt])
+  @@map("idempotency_keys")
 }
