@@ -13,7 +13,7 @@ Priority: P0 end-to-end path · P1 completes the MVP · P2 if time allows.
 | 5   | [Provider routing](provider-routing.md)               | Chooses the provider for a charge's method and currency      | P0       | Done     |
 | 6   | [Webhook ingestion](webhook-ingestion.md)             | Verify, store raw, ack fast, process idempotently in a queue | P0       | Approved |
 | 7   | [Stripe adapter](stripe-adapter.md)                   | Card payments through Stripe test mode                       | P0       | Approved |
-| 8   | [USDT on TRON Nile](tron-usdt.md)                     | Own on-chain integration for USDT TRC-20 on the Nile testnet | P0       | Approved |
+| 8   | [USDT on TRON Nile](tron-usdt.md)                     | Own on-chain integration for USDT TRC-20 on the Nile testnet | P0       | Done     |
 | 9   | [Double-entry ledger](double-entry-ledger.md)         | Immutable debit/credit entries; balances are derived         | P0       | Approved |
 | 10  | [Merchant dashboard](merchant-dashboard.md)           | Web panel: charges, balances and API keys                    | P0       | Approved |
 | 11  | [Payment links & checkout](payment-links-checkout.md) | Shareable link to a hosted checkout                          | P1       | Approved |

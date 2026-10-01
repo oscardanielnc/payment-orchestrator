@@ -27,6 +27,9 @@ Rules the linter cannot enforce.
 | `pnpm --filter @po/api test:watch`          | API tests in watch mode                                              |
 | `pnpm --filter @po/api db:migrate`          | Creates and applies a migration after editing `prisma/schema.prisma` |
 | `pnpm --filter @po/api org:create "<name>"` | Creates an organization and prints its first API key                 |
+| `pnpm --filter @po/api dev:worker`          | Runs the worker (chain watchers) in watch mode                       |
+| `pnpm --filter @po/api crypto:xpub`         | Creates a testnet deposit wallet and prints its xpub                 |
+| `pnpm --filter @po/api tron:payer …`        | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
 
 ## Testing
 
@@ -51,3 +54,9 @@ Rules the linter cannot enforce.
 - Constraints Prisma cannot express (partial unique indexes) are appended by hand to the migration SQL,
   created with `prisma migrate dev --create-only`. Review later generated migrations so they never drop them
 - `prisma migrate dev` no longer regenerates the client in Prisma 7: `db:migrate` runs `prisma generate` after it
+
+## Code layout
+
+- `src/tools/` holds developer tools (testnet wallets, payer); they are outside the layered modules on purpose
+- DI constructor parameters are written as full class types, never type aliases: SWC emits decorator metadata
+  from the written type, and an alias becomes `Object`

@@ -34,4 +34,19 @@ export class ChargePaymentsService {
     await this.outbox.add(charge.pullEvents());
     return { id: charge.id, organizationId: charge.organizationId, amount: charge.amount };
   }
+
+  /**
+   * A provider confirmed the money. Returns false (and changes nothing) if the charge can no
+   * longer succeed — e.g. another attempt already paid it — so the caller can flag it.
+   */
+  async markPaid(organizationId: string, chargeId: string): Promise<boolean> {
+    const charge = await this.charges.findForOrganization(organizationId, chargeId);
+    if (!charge) throw new ChargeNotFoundError();
+    if (charge.status !== 'processing') return false;
+
+    charge.markSucceeded(this.clock.now());
+    await this.charges.save(charge);
+    await this.outbox.add(charge.pullEvents());
+    return true;
+  }
 }

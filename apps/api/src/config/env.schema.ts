@@ -26,6 +26,11 @@ export const envSchema = z.object({
   TRON_FULL_HOST: optional(z.url({ protocol: /^https$/, error: 'must be an https URL' })),
   TRONGRID_API_KEY: optional(z.string()),
   TRON_USDT_CONTRACT: optional(tronAddress),
+  /** Account-level extended PUBLIC key (m/44'/195'/0'): derives one deposit address per attempt. */
+  TRON_DEPOSIT_XPUB: optional(
+    z.string().regex(/^xpub[1-9A-HJ-NP-Za-km-z]{107}$/, 'must be an xpub'),
+  ),
+  TRON_POLL_INTERVAL_MS: z.coerce.number().int().min(1000).default(10_000),
 
   BASE_SEPOLIA_RPC_URL: optional(z.url({ protocol: /^https$/, error: 'must be an https URL' })),
   BASE_SEPOLIA_CHAIN_ID: optional(z.coerce.number().int()),

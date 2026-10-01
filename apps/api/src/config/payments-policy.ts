@@ -7,6 +7,8 @@ import type { Env } from './env.schema';
  */
 export const ALLOWED_PAYMENTS_MODE = 'test';
 export const TRON_TESTNET_HOSTS = ['https://nile.trongrid.io'];
+/** USDT test token on Nile (faucet: nileex.io). */
+export const TRON_TESTNET_USDT_CONTRACTS = ['TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf'];
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 const STRIPE_TEST_KEY = /^(sk|rk)_test_/;
@@ -51,6 +53,16 @@ export function checkPaymentsPolicy(env: Env): PolicyViolation[] {
         reason: `must be a TRON testnet host: ${TRON_TESTNET_HOSTS.join(', ')}`,
       });
     }
+  }
+
+  if (
+    env.TRON_USDT_CONTRACT !== undefined &&
+    !TRON_TESTNET_USDT_CONTRACTS.includes(env.TRON_USDT_CONTRACT)
+  ) {
+    violations.push({
+      variable: 'TRON_USDT_CONTRACT',
+      reason: `must be the Nile test USDT contract: ${TRON_TESTNET_USDT_CONTRACTS.join(', ')}`,
+    });
   }
 
   if (env.BASE_SEPOLIA_RPC_URL !== undefined || env.BASE_SEPOLIA_CHAIN_ID !== undefined) {
