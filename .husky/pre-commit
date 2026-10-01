@@ -1,0 +1,2 @@
+gitleaks git --pre-commit --staged --redact
+pnpm exec lint-staged

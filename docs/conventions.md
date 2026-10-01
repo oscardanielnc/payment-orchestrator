@@ -16,3 +16,12 @@ Rules the linter cannot enforce.
 
 - Conventional Commits. Short branches, PRs to `main`.
 - Docs change in the same PR as the code that affects them.
+
+## Commands
+
+| Command                            | What it does                                 |
+| ---------------------------------- | -------------------------------------------- |
+| `docker compose up -d`             | Starts Postgres and Redis                    |
+| `pnpm dev`                         | Runs every app in watch mode                 |
+| `pnpm check`                       | lint → typecheck → test → build (same as CI) |
+| `pnpm --filter @po/api test:watch` | API tests in watch mode                      |

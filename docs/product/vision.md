@@ -23,14 +23,14 @@ A web dashboard lets the merchant see charges, payments and balances.
 
 ## MVP scope
 
-| Area | In the MVP |
-|---|---|
-| Tenancy | Organizations with members and API keys (minimal multi-merchant) |
-| Card / local | Stripe (test mode), Mercado Pago (test credentials) |
-| Crypto | USDT TRC-20 on TRON Nile testnet (priority), USDC on Base Sepolia |
+| Area               | In the MVP                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Tenancy            | Organizations with members and API keys (minimal multi-merchant)                                               |
+| Card / local       | Stripe (test mode), Mercado Pago (test credentials)                                                            |
+| Crypto             | USDT TRC-20 on TRON Nile testnet (priority), USDC on Base Sepolia                                              |
 | Crypto integration | Own integration, no intermediary processor: one port, one adapter per network (TronWeb for TRON, viem for EVM) |
-| Money | Integers in the minor unit + currency code. USDT and USDC use 6 decimals |
-| Channels | REST API, hosted payment link, merchant dashboard |
+| Money              | Integers in the minor unit + currency code. USDT and USDC use 6 decimals                                       |
+| Channels           | REST API, hosted payment link, merchant dashboard                                                              |
 
 ## What it is NOT
 
