@@ -65,6 +65,16 @@ describe('loadConfig', () => {
     ]);
   });
 
+  it('rejects a TRON USDT contract other than the Nile test token', () => {
+    expect(
+      problemsFor({ ...validEnv, TRON_USDT_CONTRACT: 'TFakeContractAddress11111111111111' }),
+    ).toEqual([expect.stringContaining('TRON_USDT_CONTRACT')]);
+  });
+
+  it('enables TRON only when host, contract and deposit xpub are all set', () => {
+    expect(loadConfig(validEnv).tron).toBeUndefined();
+  });
+
   it('keeps Mercado Pago disabled until its rule exists', () => {
     expect(problemsFor({ ...validEnv, MERCADOPAGO_ACCESS_TOKEN: 'TEST-placeholder' })).toEqual([
       expect.stringContaining('MERCADOPAGO_ACCESS_TOKEN'),

@@ -8,7 +8,9 @@ export interface StripeConfig {
 export interface TronConfig {
   fullHost: string;
   apiKey: string | undefined;
-  usdtContract: string | undefined;
+  usdtContract: string;
+  depositXpub: string;
+  pollIntervalMs: number;
 }
 
 export interface BaseConfig {
@@ -43,11 +45,14 @@ export class AppConfig {
       env.STRIPE_SECRET_KEY
         ? { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET }
         : undefined,
-      env.TRON_FULL_HOST
+      // TRON is enabled only when host, token contract and deposit xpub are all configured.
+      env.TRON_FULL_HOST && env.TRON_USDT_CONTRACT && env.TRON_DEPOSIT_XPUB
         ? {
             fullHost: env.TRON_FULL_HOST,
             apiKey: env.TRONGRID_API_KEY,
             usdtContract: env.TRON_USDT_CONTRACT,
+            depositXpub: env.TRON_DEPOSIT_XPUB,
+            pollIntervalMs: env.TRON_POLL_INTERVAL_MS,
           }
         : undefined,
       env.BASE_SEPOLIA_RPC_URL && env.BASE_SEPOLIA_CHAIN_ID
