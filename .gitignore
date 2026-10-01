@@ -26,11 +26,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Local-only tooling notes
-CLAUDE.md
-CLAUDE.local.md
-.claude/
-
 # Wallet material must never be committed
 *.keystore
 *.mnemonic
