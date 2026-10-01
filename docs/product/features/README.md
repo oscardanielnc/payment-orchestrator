@@ -7,7 +7,7 @@ Priority: P0 end-to-end path · P1 completes the MVP · P2 if time allows.
 | #   | Feature                                               | Summary                                                      | Priority | Status   |
 | --- | ----------------------------------------------------- | ------------------------------------------------------------ | -------- | -------- |
 | 1   | [Environment guard](environment-guard.md)             | Refuses to boot on live credentials or mainnet               | P0       | Done     |
-| 2   | [Organizations & API keys](organizations-api-keys.md) | Merchant tenancy and hashed, rotatable API keys              | P0       | Approved |
+| 2   | [Organizations & API keys](organizations-api-keys.md) | Merchant tenancy and hashed, rotatable API keys              | P0       | Done     |
 | 3   | [Dashboard auth](dashboard-auth.md)                   | Login for dashboard users with rotating refresh tokens       | P0       | Approved |
 | 4   | [Charges API](charges-api.md)                         | Create and query charges idempotently, with a state machine  | P0       | Approved |
 | 5   | [Provider routing](provider-routing.md)               | Chooses the provider for a charge's method and currency      | P0       | Approved |

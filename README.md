@@ -13,10 +13,12 @@ Requirements: Node 24, pnpm, Docker.
 pnpm install
 cp .env.example .env
 docker compose up -d
-pnpm dev                # API on http://localhost:3000/v1/health
+pnpm --filter @po/api db:deploy                  # apply migrations
+pnpm --filter @po/api org:create "Acme Coffee"   # prints a test API key
+pnpm dev                                         # API on http://localhost:3000/v1/health
 ```
 
-`pnpm check` runs lint, typecheck, tests and build, the same as CI.
+`pnpm check` runs lint, typecheck, tests and build, the same as CI. E2E tests need Docker running.
 
 ## Layout
 
