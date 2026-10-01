@@ -84,7 +84,7 @@ Confirmation arrives
 ## Crypto
 
 - Deposit addresses derived from an xpub; no spending keys on the server ([ADR 0010](../adr/0010-crypto-deposits.md))
-- Watchers poll with a stored cursor, only confirmed data, and hand off to the same queue as webhooks
+- Watchers (worker process) poll with a stored cursor, only confirmed data; each transfer settles in its own transaction (queue added with feature 6)
 
 ## Frontend
 

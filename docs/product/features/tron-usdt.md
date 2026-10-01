@@ -1,7 +1,7 @@
 # 8. USDT on TRON Nile
 
 - Priority: P0
-- Status: Approved
+- Status: Done (live test pending: needs a funded Nile payer wallet)
 
 ## Purpose
 
@@ -9,7 +9,7 @@ Priority crypto rail, built without an intermediary processor.
 
 ## Rules
 
-- One deposit address per charge, derived from an extended public key (the server never holds spending keys)
+- One deposit address per payment attempt, derived from an extended public key (the server never holds spending keys)
 - A watcher detects TRC-20 `Transfer` events of the configured USDT contract to active deposit addresses
 - A payment counts only once its block is **solidified** (irreversible on TRON)
 - Amount matching in integers with 6 decimals:
@@ -22,9 +22,18 @@ Priority crypto rail, built without an intermediary processor.
 
 ## Acceptance criteria
 
-- [ ] Test USDT sent on Nile to the charge address moves it to `succeeded` after solidification
-- [ ] Underpayment and overpayment follow the rules above (tested with fakes)
-- [ ] Restarting the watcher neither misses nor double-counts transfers (it resumes from a stored cursor)
+- [x] Test USDT sent on Nile to the charge address moves it to `succeeded` after solidification
+- [x] Underpayment and overpayment follow the rules above (tested with fakes)
+- [x] Restarting the watcher neither misses nor double-counts transfers (it resumes from a stored cursor)
+
+## Implementation
+
+- Module `apps/api/src/modules/crypto/`: chain mechanics only (derivation, TronGrid reader, deposits, transfers, cursor)
+- `payments` drives it: `CryptoDepositProvider` (registered when TRON config is complete) and `ProcessChainTransfersUseCase`
+- Worker process `src/worker.ts` polls every `TRON_POLL_INTERVAL_MS`
+- Dev tools: `crypto:xpub`, `tron:payer new | balance | pay` — see [the runbook](../../runbooks/test-a-payment-on-nile.md)
+- Tests: derivation compared with TronWeb; TronGrid parsing with a real response shape; e2e of exact, partial,
+  overpaid, duplicated and foreign transfers against Postgres
 
 ## Out of scope
 

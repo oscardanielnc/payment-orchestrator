@@ -7,15 +7,17 @@ import { loadConfig } from '../../src/config/load-config';
 
 /**
  * Boots the real app (same modules as production) against the e2e database.
- * `customize` can override a provider, e.g. to inject a failure.
+ * `customize` can override a provider (e.g. to inject a failure); `env` adds variables.
  */
 export async function createTestApp(
   customize: (builder: TestingModuleBuilder) => TestingModuleBuilder = (builder) => builder,
+  env: NodeJS.ProcessEnv = {},
 ): Promise<INestApplication<App>> {
   const config = loadConfig({
     PAYMENTS_MODE: 'test',
     DATABASE_URL: inject('databaseUrl'),
     REDIS_URL: 'redis://localhost:6379',
+    ...env,
   });
   const moduleRef = await customize(
     Test.createTestingModule({ imports: [AppModule.register(config)] }),

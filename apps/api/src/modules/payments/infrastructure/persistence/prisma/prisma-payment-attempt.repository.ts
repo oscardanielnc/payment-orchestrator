@@ -61,6 +61,11 @@ export class PrismaPaymentAttemptRepository extends PaymentAttemptRepository {
     attempt.markPersisted(attempt.version + 1);
   }
 
+  async findById(id: string): Promise<PaymentAttempt | null> {
+    const row = await this.txHost.tx.paymentAttempt.findUnique({ where: { id } });
+    return row ? toDomain(row) : null;
+  }
+
   async listForCharge(organizationId: string, chargeId: string): Promise<PaymentAttempt[]> {
     const rows = await this.txHost.tx.paymentAttempt.findMany({
       where: { organizationId, chargeId },
