@@ -1,0 +1,13 @@
+{
+  "extends": "@po/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "include": ["src", "test", "vitest.config.mts"]
+}

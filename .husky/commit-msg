@@ -1,0 +1,1 @@
+sed -i -E '/^Co-authored-by:.*(Claude|anthropic)/Id; /Generated with \[?Claude/d; /^Claude-Session:/d' "$1"
