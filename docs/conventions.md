@@ -19,9 +19,22 @@ Rules the linter cannot enforce.
 
 ## Commands
 
-| Command                            | What it does                                 |
-| ---------------------------------- | -------------------------------------------- |
-| `docker compose up -d`             | Starts Postgres and Redis                    |
-| `pnpm dev`                         | Runs every app in watch mode                 |
-| `pnpm check`                       | lint → typecheck → test → build (same as CI) |
-| `pnpm --filter @po/api test:watch` | API tests in watch mode                      |
+| Command                                     | What it does                                                         |
+| ------------------------------------------- | -------------------------------------------------------------------- |
+| `docker compose up -d`                      | Starts Postgres and Redis                                            |
+| `pnpm dev`                                  | Runs every app in watch mode                                         |
+| `pnpm check`                                | lint → typecheck → test → build (same as CI)                         |
+| `pnpm --filter @po/api test:watch`          | API tests in watch mode                                              |
+| `pnpm --filter @po/api db:migrate`          | Creates and applies a migration after editing `prisma/schema.prisma` |
+| `pnpm --filter @po/api org:create "<name>"` | Creates an organization and prints its first API key                 |
+
+## Testing
+
+- Unit tests (`src/**/*.spec.ts`) use in-memory fakes of the ports; no database
+- E2E tests (`test/**/*.e2e-spec.ts`) boot the real app against a Testcontainers Postgres: Docker must be running
+- Test fixtures that look like secrets carry an inline `gitleaks:allow` comment explaining why
+
+## Errors
+
+- Domain errors extend `DomainError` with a stable `code` (`<entity>.<problem>`)
+- HTTP statuses are mapped only in `ProblemDetailsFilter`; responses follow RFC 9457 with `code`

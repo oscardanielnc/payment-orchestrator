@@ -1,0 +1,34 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id        String   @id @db.Uuid
+  name      String
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  apiKeys   ApiKey[]
+
+  @@map("organizations")
+}
+
+/// `id` is the public part of the token (po_<env>_<id>_<secret>); only a hash of the secret is stored.
+model ApiKey {
+  id             String       @id
+  organizationId String       @map("organization_id") @db.Uuid
+  name           String
+  secretHash     String       @map("secret_hash")
+  createdAt      DateTime     @map("created_at") @db.Timestamptz(3)
+  revokedAt      DateTime?    @map("revoked_at") @db.Timestamptz(3)
+  lastUsedAt     DateTime?    @map("last_used_at") @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("api_keys")
+}
