@@ -17,7 +17,8 @@
     "dev:worker": "nest start --watch --entryFile worker",
     "start:worker": "node dist/worker.js",
     "crypto:xpub": "nest build && node dist/tools/generate-deposit-xpub.js",
-    "tron:payer": "nest build && node dist/tools/tron-test-payer.js"
+    "tron:payer": "nest build && node dist/tools/tron-test-payer.js",
+    "demo:tron": "nest build && node dist/tools/demo-tron-payment.js"
   },
   "dependencies": {
     "@nestjs-cls/transactional": "^4.0.1",

@@ -12,7 +12,14 @@ pnpm --filter @po/api tron:payer new     # customer wallet: put TRON_TEST_PAYER_
 Fund the **payer address** with test TRX (fees) and test USDT at https://nileex.io/join/getJoinPage,
 then check: `pnpm --filter @po/api tron:payer balance`.
 
-## Every time
+## Fastest: one command
+
+```sh
+docker compose up -d && pnpm --filter @po/api db:deploy
+pnpm --filter @po/api demo:tron          # org → charge → attempt → real Nile payment → waits until paid
+```
+
+## Every time, through the HTTP API
 
 ```sh
 docker compose up -d

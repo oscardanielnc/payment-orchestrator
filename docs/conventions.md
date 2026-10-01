@@ -30,6 +30,7 @@ Rules the linter cannot enforce.
 | `pnpm --filter @po/api dev:worker`          | Runs the worker (chain watchers) in watch mode                       |
 | `pnpm --filter @po/api crypto:xpub`         | Creates a testnet deposit wallet and prints its xpub                 |
 | `pnpm --filter @po/api tron:payer …`        | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
+| `pnpm --filter @po/api demo:tron [units]`   | Whole USDT flow on Nile in one command (needs a funded payer)        |
 
 ## Testing
 
