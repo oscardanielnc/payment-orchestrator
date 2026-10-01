@@ -45,3 +45,9 @@ Rules the linter cannot enforce.
 - Money is a string of minor units in JSON, `bigint` in code, `NUMERIC(78,0)` in Postgres
 - Endpoints that create or move money use `IdempotencyInterceptor` and therefore require `Idempotency-Key`
 - Lists use keyset pagination: `?limit=&cursor=` → `{ data, nextCursor }`
+
+## Database
+
+- Constraints Prisma cannot express (partial unique indexes) are appended by hand to the migration SQL,
+  created with `prisma migrate dev --create-only`. Review later generated migrations so they never drop them
+- `prisma migrate dev` no longer regenerates the client in Prisma 7: `db:migrate` runs `prisma generate` after it

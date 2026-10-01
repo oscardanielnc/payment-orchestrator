@@ -25,18 +25,18 @@ Runtime (local and prod): Postgres + Redis via Docker Compose.
 Every module is hexagonal ([ADR 0002](../adr/0002-hexagonal-modules.md)):
 `domain → application (use cases + ports) → infrastructure / presentation`.
 
-| Module           | Owns                                                                                 | Main ports                                             |
-| ---------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| `shared`         | `Money`, `Currency`, ids, domain errors, `Clock`, outbox, unit of work               | `Clock`, `IdGenerator`, `OutboxWriter`                 |
-| `config`         | Environment schema + payments policy ([ADR 0006](../adr/0006-environment-policy.md)) | —                                                      |
-| `identity`       | Users, organizations, members, sessions, API keys                                    | `UserRepository`, `ApiKeyRepository`, `PasswordHasher` |
-| `charges`        | Charges, payment attempts, state machine, idempotency                                | `ChargeRepository`, `IdempotencyStore`                 |
-| `payments`       | Routing + card/local providers (Stripe, Mercado Pago)                                | `PaymentProvider`                                      |
-| `crypto`         | Deposit addresses, chain watchers (TRON, EVM)                                        | `AddressDeriver`, `BlockchainWatcher`                  |
-| `inbound`        | Webhook ingestion: verify, store raw, enqueue                                        | `WebhookVerifier`, `RawEventStore`                     |
-| `ledger`         | Accounts, entries, balances                                                          | `LedgerRepository`                                     |
-| `notifications`  | Outbound merchant webhooks                                                           | `WebhookSender`                                        |
-| `reconciliation` | Provider vs ledger findings                                                          | `ProviderStatement`                                    |
+| Module           | Owns                                                                                           | Main ports                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `shared`         | `Money`, `Currency`, ids, domain errors, `Clock`, outbox, unit of work                         | `Clock`, `IdGenerator`, `OutboxWriter`                 |
+| `config`         | Environment schema + payments policy ([ADR 0006](../adr/0006-environment-policy.md))           | —                                                      |
+| `identity`       | Users, organizations, members, sessions, API keys                                              | `UserRepository`, `ApiKeyRepository`, `PasswordHasher` |
+| `charges`        | Charges, payment attempts, state machine, idempotency                                          | `ChargeRepository`, `IdempotencyStore`                 |
+| `payments`       | Payment attempts, routing table, provider registry; card/local adapters (Stripe, Mercado Pago) | `PaymentProvider`                                      |
+| `crypto`         | Deposit addresses, chain watchers (TRON, EVM); its adapters also implement `PaymentProvider`   | `AddressDeriver`, `BlockchainWatcher`                  |
+| `inbound`        | Webhook ingestion: verify, store raw, enqueue                                                  | `WebhookVerifier`, `RawEventStore`                     |
+| `ledger`         | Accounts, entries, balances                                                                    | `LedgerRepository`                                     |
+| `notifications`  | Outbound merchant webhooks                                                                     | `WebhookSender`                                        |
+| `reconciliation` | Provider vs ledger findings                                                                    | `ProviderStatement`                                    |
 
 ### Rules between modules
 

@@ -55,7 +55,8 @@ model Charge {
   createdAt      DateTime     @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime     @map("updated_at") @db.Timestamptz(3)
   version        Int
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  attempts       PaymentAttempt[]
 
   @@index([organizationId, createdAt(sort: Desc), id(sort: Desc)])
   @@map("charges")
@@ -89,4 +90,31 @@ model IdempotencyKey {
   @@id([scope, key])
   @@index([createdAt])
   @@map("idempotency_keys")
+}
+
+enum AttemptStatus {
+  pending
+  succeeded
+  failed
+}
+
+/// One try at paying a charge. A partial unique index (in the migration SQL) allows at most
+/// one succeeded attempt per charge; Prisma cannot express partial indexes in the schema.
+model PaymentAttempt {
+  id                String        @id @db.Uuid
+  chargeId          String        @map("charge_id") @db.Uuid
+  organizationId    String        @map("organization_id") @db.Uuid
+  method            String
+  provider          String
+  status            AttemptStatus
+  externalReference String        @map("external_reference")
+  instructions      Json
+  createdAt         DateTime      @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime      @map("updated_at") @db.Timestamptz(3)
+  version           Int
+  charge            Charge        @relation(fields: [chargeId], references: [id])
+
+  @@unique([provider, externalReference])
+  @@index([chargeId, createdAt])
+  @@map("payment_attempts")
 }
