@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { Money } from '../../../shared/domain/money';
 import { Charge } from './charge';
 import { ALLOWED_TRANSITIONS, type ChargeStatus } from './charge-status';
-import { InvalidChargeAmountError, InvalidChargeTransitionError } from './errors';
+import {
+  ChargeNotPayableError,
+  InvalidChargeAmountError,
+  InvalidChargeTransitionError,
+} from './errors';
 
 const NOW = new Date('2026-10-01T12:00:00Z');
 const later = (seconds: number) => new Date(NOW.getTime() + seconds * 1000);
@@ -69,6 +73,23 @@ describe('Charge', () => {
       'charge.processing',
       'charge.succeeded',
     ]);
+  });
+
+  it('accepts payment attempts only while open and not expired', () => {
+    const charge = chargeIn('pending');
+
+    charge.beginPaymentAttempt(later(10));
+    expect(charge.status).toBe('processing');
+    charge.beginPaymentAttempt(later(20)); // switching method keeps it processing
+    expect(charge.status).toBe('processing');
+
+    expect(() => charge.beginPaymentAttempt(later(1800))).toThrow(ChargeNotPayableError);
+    expect(() => chargeIn('pending').beginPaymentAttempt(later(1800))).toThrow(
+      ChargeNotPayableError,
+    );
+    expect(() => chargeIn('succeeded').beginPaymentAttempt(later(10))).toThrow(
+      ChargeNotPayableError,
+    );
   });
 
   it('cannot expire before its expiry time', () => {

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { IdentityModule } from '../identity/identity.module';
 import { ChargeRepository } from './application/ports/charge.repository';
+import { ChargePaymentsService } from './application/services/charge-payments.service';
 import { CreateChargeUseCase } from './application/use-cases/create-charge.use-case';
 import { GetChargeUseCase } from './application/use-cases/get-charge.use-case';
 import { ListChargesUseCase } from './application/use-cases/list-charges.use-case';
@@ -16,7 +17,9 @@ import { ChargesController } from './presentation/http/charges.controller';
     CreateChargeUseCase,
     GetChargeUseCase,
     ListChargesUseCase,
+    ChargePaymentsService,
   ],
-  exports: [CreateChargeUseCase, GetChargeUseCase],
+  // Public API: other modules use these, never ChargeRepository or the entity.
+  exports: [CreateChargeUseCase, GetChargeUseCase, ChargePaymentsService],
 })
 export class ChargesModule {}

@@ -32,3 +32,11 @@ export class InvalidChargeCursorError extends DomainError {
     super('The pagination cursor is invalid');
   }
 }
+
+export class ChargeNotPayableError extends DomainError {
+  readonly code = 'charge.not_payable';
+
+  constructor(status: ChargeStatus) {
+    super(`The charge cannot accept payments (status: ${status}, or past its expiry)`);
+  }
+}

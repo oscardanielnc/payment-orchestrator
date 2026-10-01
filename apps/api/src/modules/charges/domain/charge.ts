@@ -1,7 +1,11 @@
 import type { DomainEvent } from '../../../shared/domain/domain-event';
 import type { Money } from '../../../shared/domain/money';
 import { ALLOWED_TRANSITIONS, type ChargeStatus } from './charge-status';
-import { InvalidChargeAmountError, InvalidChargeTransitionError } from './errors';
+import {
+  ChargeNotPayableError,
+  InvalidChargeAmountError,
+  InvalidChargeTransitionError,
+} from './errors';
 
 export interface ChargeProps {
   id: string;
@@ -95,6 +99,16 @@ export class Charge {
   /** A payment attempt started (customer picked a method). */
   startProcessing(now: Date): void {
     this.transitionTo('processing', now);
+  }
+
+  /**
+   * Another payment attempt may start while the charge is open: pending (first attempt,
+   * moves to processing) or processing (customer switched method). Never once expired or final.
+   */
+  beginPaymentAttempt(now: Date): void {
+    const open = this.status === 'pending' || this.status === 'processing';
+    if (!open || this.isExpiredAt(now)) throw new ChargeNotPayableError(this.status);
+    if (this.status === 'pending') this.startProcessing(now);
   }
 
   markSucceeded(now: Date): void {
