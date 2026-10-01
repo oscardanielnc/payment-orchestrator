@@ -1,7 +1,7 @@
 # 1. Environment guard
 
 - Priority: P0
-- Status: Approved
+- Status: Done
 
 ## Purpose
 
@@ -22,11 +22,20 @@ configuration and aborts if anything is missing or points to real money.
 
 ## Acceptance criteria
 
-- [ ] Boot with a valid test `.env` succeeds
-- [ ] Boot with a `sk_live_` key fails with a clear error naming `STRIPE_SECRET_KEY`
-- [ ] Boot with chain id 8453 fails
-- [ ] Boot with `PAYMENTS_MODE=live` fails
-- [ ] No secret value appears in logs or error output
+- [x] Boot with a valid test `.env` succeeds
+- [x] Boot with a `sk_live_` key fails with a clear error naming `STRIPE_SECRET_KEY`
+- [x] Boot with chain id 8453 fails
+- [x] Boot with `PAYMENTS_MODE=live` fails
+- [x] No secret value appears in logs or error output
+
+## Implementation
+
+- `apps/api/src/config/`: `env.schema.ts` (shape), `payments-policy.ts` (test-only rules, fail closed),
+  `load-config.ts` (runs both, throws `ConfigError`), `config.module.ts` (provides `AppConfig`)
+- Validation runs in `main.ts` before Nest builds the DI container
+- Every rule is an allow-list: TRON hosts, Base Sepolia chain id, Stripe test prefixes
+- Mercado Pago credentials are rejected until feature 12 defines their test rule
+- Tests: `load-config.spec.ts` (one per acceptance criterion) and `test/health.e2e-spec.ts`
 
 ## Out of scope
 
