@@ -9,7 +9,8 @@ pnpm --filter @po/api crypto:xpub        # deposit wallet: put TRON_DEPOSIT_XPUB
 pnpm --filter @po/api tron:payer new     # customer wallet: put TRON_TEST_PAYER_PRIVATE_KEY in .env
 ```
 
-Fund the **payer address** with test TRX (fees) and test USDT at https://nileex.io/join/getJoinPage,
+Fund the **payer address** at https://nileex.io/join/getJoinPage: test TRX (fees) and test USDT are
+requested separately (or ask TronFAQBot `!nile_usdt <address>`),
 then check: `pnpm --filter @po/api tron:payer balance`.
 
 ## Fastest: one command
@@ -45,7 +46,7 @@ curl -s -X POST localhost:3000/v1/charges/<chargeId>/attempts -H "Authorization:
 # 3. Customer pays
 pnpm --filter @po/api tron:payer pay <address> 1000000
 
-# 4. About a minute later the worker logs "1 charge(s) paid"
+# 4. About a minute later the worker logs "1 new transfer(s), 1 charge(s) paid"
 curl -s localhost:3000/v1/charges/<chargeId> -H "Authorization: Bearer $KEY"   # status: succeeded
 ```
 

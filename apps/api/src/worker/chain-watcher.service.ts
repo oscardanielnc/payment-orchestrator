@@ -45,9 +45,10 @@ export class ChainWatcherService implements OnApplicationBootstrap, OnApplicatio
   private async tick(network: CryptoNetwork): Promise<void> {
     try {
       const summary = await this.process.execute(network);
-      if (summary.relevant > 0) {
+      // Re-read transfers (cursor overlap) are expected; only log when something new happened.
+      if (summary.applied > 0) {
         this.logger.log(
-          `${network}: ${summary.relevant} transfer(s) to our addresses, ${summary.applied} new, ${summary.paid} charge(s) paid`,
+          `${network}: ${summary.applied} new transfer(s), ${summary.paid} charge(s) paid`,
         );
       }
     } catch (error) {
