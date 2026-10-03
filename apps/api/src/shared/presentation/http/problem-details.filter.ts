@@ -33,6 +33,8 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
   'charge.invalid_cursor': HttpStatus.BAD_REQUEST,
   'money.unsupported_currency': HttpStatus.BAD_REQUEST,
   'concurrency.conflict': HttpStatus.CONFLICT,
+  'webhook.invalid_signature': HttpStatus.BAD_REQUEST,
+  'webhook.unknown_provider': HttpStatus.NOT_FOUND,
 };
 
 const TITLES: Record<number, string> = {

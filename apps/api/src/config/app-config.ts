@@ -13,6 +13,12 @@ export interface TronConfig {
   pollIntervalMs: number;
 }
 
+export interface QueueConfig {
+  maxAttempts: number;
+  backoffMs: number;
+  prefix: string;
+}
+
 export interface BaseConfig {
   rpcUrl: string;
   chainId: number;
@@ -33,6 +39,7 @@ export class AppConfig {
     readonly stripe: StripeConfig | undefined,
     readonly tron: TronConfig | undefined,
     readonly base: BaseConfig | undefined,
+    readonly queue: QueueConfig,
   ) {}
 
   static fromEnv(env: Env): AppConfig {
@@ -62,6 +69,11 @@ export class AppConfig {
             usdcContract: env.BASE_USDC_CONTRACT,
           }
         : undefined,
+      {
+        maxAttempts: env.QUEUE_MAX_ATTEMPTS,
+        backoffMs: env.QUEUE_BACKOFF_MS,
+        prefix: env.QUEUE_PREFIX,
+      },
     );
   }
 }

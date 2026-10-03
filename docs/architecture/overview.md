@@ -33,7 +33,7 @@ Every module is hexagonal ([ADR 0002](../adr/0002-hexagonal-modules.md)):
 | `charges`        | Charges, payment attempts, state machine, idempotency                                          | `ChargeRepository`, `IdempotencyStore`                 |
 | `payments`       | Payment attempts, routing table, provider registry; card/local adapters (Stripe, Mercado Pago) | `PaymentProvider`                                      |
 | `crypto`         | Deposit addresses, chain watchers (TRON, EVM); its adapters also implement `PaymentProvider`   | `AddressDeriver`, `BlockchainWatcher`                  |
-| `inbound`        | Webhook ingestion: verify, store raw, enqueue                                                  | `WebhookVerifier`, `RawEventStore`                     |
+| `inbound`        | Webhooks and chain transfers: verify, store raw, enqueue after commit                          | `WebhookVerifier`, `RawEventStore`                     |
 | `ledger`         | Accounts, entries, balances                                                                    | `LedgerRepository`                                     |
 | `notifications`  | Outbound merchant webhooks                                                                     | `WebhookSender`                                        |
 | `reconciliation` | Provider vs ledger findings                                                                    | `ProviderStatement`                                    |

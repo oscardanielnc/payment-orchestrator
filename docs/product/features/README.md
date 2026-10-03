@@ -11,7 +11,7 @@ Priority: P0 end-to-end path · P1 completes the MVP · P2 if time allows.
 | 3   | [Dashboard auth](dashboard-auth.md)                   | Login for dashboard users with rotating refresh tokens       | P0       | Approved |
 | 4   | [Charges API](charges-api.md)                         | Create and query charges idempotently, with a state machine  | P0       | Done     |
 | 5   | [Provider routing](provider-routing.md)               | Chooses the provider for a charge's method and currency      | P0       | Done     |
-| 6   | [Webhook ingestion](webhook-ingestion.md)             | Verify, store raw, ack fast, process idempotently in a queue | P0       | Approved |
+| 6   | [Webhook ingestion](webhook-ingestion.md)             | Verify, store raw, ack fast, process idempotently in a queue | P0       | Done     |
 | 7   | [Stripe adapter](stripe-adapter.md)                   | Card payments through Stripe test mode                       | P0       | Approved |
 | 8   | [USDT on TRON Nile](tron-usdt.md)                     | Own on-chain integration for USDT TRC-20 on the Nile testnet | P0       | Done     |
 | 9   | [Double-entry ledger](double-entry-ledger.md)         | Immutable debit/credit entries; balances are derived         | P0       | Done     |

@@ -67,3 +67,11 @@ Rules the linter cannot enforce.
 - Every money movement posts through `LedgerService.post` inside the same unit of work as the state change
 - Each post has an `externalId` derived from the business event (`chain-transfer:…`, `charge-settled:<id>`)
 - Never update or delete ledger rows (triggers will refuse); post a reversal with `reversalEntries()`
+
+## Queues
+
+- Enqueue after the transaction commits, never inside it (the job may run before the row is visible)
+- Every job has a deterministic `jobId` (no `:`); handlers are idempotent because delivery is at-least-once
+- Consumers (`@Processor`) are registered only in the worker; the API only produces
+- New inbound providers add a `WebhookVerifier` to `WEBHOOK_VERIFIERS` and an `InboundEventHandler` to the
+  handlers their module exports

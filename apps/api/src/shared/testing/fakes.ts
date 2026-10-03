@@ -1,6 +1,6 @@
 import { Clock } from '../application/ports/clock';
 import { IdGenerator } from '../application/ports/id-generator';
-import { Outbox } from '../application/ports/outbox';
+import { Outbox, type StoredDomainEvent } from '../application/ports/outbox';
 import { TransactionRunner } from '../application/ports/transaction-runner';
 import type { DomainEvent } from '../domain/domain-event';
 
@@ -36,6 +36,14 @@ export class InMemoryOutbox extends Outbox {
 
   add(events: DomainEvent[]): Promise<void> {
     this.events.push(...events);
+    return Promise.resolve();
+  }
+
+  claimUnpublished(): Promise<StoredDomainEvent[]> {
+    return Promise.resolve([]);
+  }
+
+  markPublished(): Promise<void> {
     return Promise.resolve();
   }
 }
