@@ -16,6 +16,15 @@ export const envSchema = z.object({
 
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/, error: 'must be a postgres:// URL' }),
   REDIS_URL: z.url({ protocol: /^rediss?$/, error: 'must be a redis:// URL' }),
+  /** Attempts per job before it goes to the dead-letter queue. */
+  QUEUE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
+  /** First retry delay; doubles on every attempt (exponential backoff). */
+  QUEUE_BACKOFF_MS: z.coerce.number().int().min(1).default(1000),
+  /** Redis key prefix: separates environments (and parallel test runs) sharing one Redis. */
+  QUEUE_PREFIX: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .default('po'),
 
   STRIPE_SECRET_KEY: optional(z.string()),
   STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith('whsec_', 'must start with whsec_')),
