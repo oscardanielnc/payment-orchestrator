@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import type { Charge, PaymentAttempt } from '@po/contracts';
+import type { BalanceList, Charge, LedgerEntryList, PaymentAttempt } from '@po/contracts';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import request from 'supertest';
@@ -69,18 +69,18 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     await app.close();
   });
 
-  const post = (path: string, body: object) =>
+  const post = (path: string, body: object, as = token) =>
     request(app.getHttpServer())
       .post(path)
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${as}`)
       .set('Idempotency-Key', `tron-${Date.now()}-${(seq += 1)}`)
       .send(body);
 
-  async function openUsdtAttempt(amount = '10000000') {
-    const charge = (await post('/v1/charges', { amount, currency: 'USDT' }).expect(201))
+  async function openUsdtAttempt(amount = '10000000', as = token) {
+    const charge = (await post('/v1/charges', { amount, currency: 'USDT' }, as).expect(201))
       .body as Charge;
     const attempt = (
-      await post(`/v1/charges/${charge.id}/attempts`, { method: 'usdt_tron' }).expect(201)
+      await post(`/v1/charges/${charge.id}/attempts`, { method: 'usdt_tron' }, as).expect(201)
     ).body as PaymentAttempt;
     if (attempt.instructions.type !== 'crypto_transfer')
       throw new Error('expected crypto instructions');
@@ -160,5 +160,101 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     chain.transfers = [{ ...transferTo('TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf', 1n) }];
 
     expect(await tick()).toEqual({ relevant: 0, applied: 0, paid: 0 });
+  });
+
+  describe('double-entry ledger', () => {
+    const entriesOf = async (chargeId: string, as = token) =>
+      (
+        await request(app.getHttpServer())
+          .get(`/v1/charges/${chargeId}/ledger-entries`)
+          .set('Authorization', `Bearer ${as}`)
+          .expect(200)
+      ).body as LedgerEntryList;
+
+    const balancesOf = async (as: string) => {
+      const list = (
+        await request(app.getHttpServer())
+          .get('/v1/balances')
+          .set('Authorization', `Bearer ${as}`)
+          .expect(200)
+      ).body as BalanceList;
+      return Object.fromEntries(list.data.map((b) => [b.name, b.posted]));
+    };
+
+    /** Every ledger transaction must have Σ debits = Σ credits. */
+    const expectBalanced = (entries: LedgerEntryList['data']) => {
+      const byTx = new Map<string, bigint>();
+      for (const e of entries) {
+        const signed = e.direction === 'debit' ? BigInt(e.amount) : -BigInt(e.amount);
+        byTx.set(e.transactionId, (byTx.get(e.transactionId) ?? 0n) + signed);
+      }
+      expect([...byTx.values()].every((sum) => sum === 0n)).toBe(true);
+    };
+
+    it('posts "received" and "settled" for an exact payment, each balanced', async () => {
+      const { charge, address } = await openUsdtAttempt();
+      chain.transfers = [transferTo(address, 10_000_000n)];
+      await tick();
+
+      const { data } = await entriesOf(charge.id);
+
+      expect(
+        data.map((e) => `${e.description}: ${e.direction} ${e.accountName} ${e.amount}`),
+      ).toEqual([
+        'USDT received on tron-nile: debit Deposits on tron-nile 10000000',
+        'USDT received on tron-nile: credit Awaiting settlement 10000000',
+        'Charge paid: debit Awaiting settlement 10000000',
+        'Charge paid: credit Available 10000000',
+      ]);
+      expectBalanced(data);
+    });
+
+    it('never posts twice for the same transfer', async () => {
+      const { charge, address } = await openUsdtAttempt();
+      chain.transfers = [transferTo(address, 10_000_000n)];
+      await tick();
+      await tick();
+
+      const transactions = new Set((await entriesOf(charge.id)).data.map((e) => e.transactionId));
+      expect(transactions.size).toBe(2);
+    });
+
+    it('derives merchant balances from entries: partial, exact, over and extra payments', async () => {
+      const merchant = (await app.get(CreateOrganizationUseCase).execute({ name: 'Ledger Co' }))
+        .token;
+
+      const partial = await openUsdtAttempt('10000000', merchant);
+      chain.transfers = [transferTo(partial.address, 4_000_000n)];
+      await tick();
+      expect(await balancesOf(merchant)).toMatchObject({ 'Awaiting settlement': '4000000' });
+
+      chain.transfers = [transferTo(partial.address, 6_000_000n)];
+      await tick();
+      const over = await openUsdtAttempt('10000000', merchant);
+      chain.transfers = [transferTo(over.address, 12_500_000n)];
+      await tick();
+      chain.transfers = [transferTo(over.address, 1_000_000n)]; // arrives after the charge is paid
+      await tick();
+
+      expect(await balancesOf(merchant)).toEqual({
+        'Awaiting settlement': '0',
+        Available: '20000000',
+        Overpayments: '3500000',
+      });
+      expectBalanced((await entriesOf(over.charge.id, merchant)).data);
+    });
+
+    it('lets Postgres refuse edits and deletes of ledger rows', async () => {
+      const { address } = await openUsdtAttempt();
+      chain.transfers = [transferTo(address, 10_000_000n)];
+      await tick();
+
+      await expect(
+        prisma.$executeRaw`UPDATE ledger_entries SET amount = amount + 1`,
+      ).rejects.toThrow(/append-only/);
+      await expect(prisma.$executeRaw`DELETE FROM ledger_transactions`).rejects.toThrow(
+        /cannot be deleted/,
+      );
+    });
   });
 });
