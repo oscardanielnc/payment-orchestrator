@@ -170,3 +170,62 @@ model WatcherCursor {
 
   @@map("watcher_cursors")
 }
+
+enum NormalBalance {
+  debit
+  credit
+}
+
+enum LedgerTransactionStatus {
+  pending
+  posted
+  archived
+}
+
+/// Created on first use. (code, currency) is the business identity (ADR 0009).
+model LedgerAccount {
+  id             String        @id @db.Uuid
+  code           String
+  currency       String        @db.VarChar(10)
+  name           String
+  normalBalance  NormalBalance @map("normal_balance")
+  organizationId String?       @map("organization_id") @db.Uuid
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  entries        LedgerEntry[]
+
+  @@unique([code, currency])
+  @@index([organizationId])
+  @@map("ledger_accounts")
+}
+
+/// Append-only. A trigger (migration SQL) rejects deletes and any change once not pending.
+model LedgerTransaction {
+  id             String                  @id @db.Uuid
+  externalId     String                  @unique @map("external_id")
+  organizationId String?                 @map("organization_id") @db.Uuid
+  reference      String?
+  description    String
+  status         LedgerTransactionStatus
+  effectiveAt    DateTime                @map("effective_at") @db.Timestamptz(3)
+  postedAt       DateTime?               @map("posted_at") @db.Timestamptz(3)
+  entries        LedgerEntry[]
+
+  @@index([reference])
+  @@map("ledger_transactions")
+}
+
+/// Immutable. A trigger (migration SQL) rejects UPDATE and DELETE.
+model LedgerEntry {
+  id            String            @id @db.Uuid
+  transactionId String            @map("transaction_id") @db.Uuid
+  accountId     String            @map("account_id") @db.Uuid
+  direction     NormalBalance
+  amount        Decimal           @db.Decimal(78, 0)
+  currency      String            @db.VarChar(10)
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
+  account       LedgerAccount     @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([transactionId])
+  @@map("ledger_entries")
+}
