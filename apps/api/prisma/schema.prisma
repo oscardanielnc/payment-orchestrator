@@ -229,3 +229,29 @@ model LedgerEntry {
   @@index([transactionId])
   @@map("ledger_entries")
 }
+
+enum InboundEventStatus {
+  received
+  processed
+  ignored
+  failed
+}
+
+/// Webhooks and chain transfers exactly as received; processed asynchronously (ADR 0008).
+model InboundEvent {
+  id          String             @id @db.Uuid
+  provider    String
+  externalId  String             @map("external_id")
+  type        String
+  /// Raw body as text: what the signature covered, byte for byte.
+  payload     String
+  status      InboundEventStatus
+  attempts    Int                @default(0)
+  lastError   String?            @map("last_error")
+  receivedAt  DateTime           @map("received_at") @db.Timestamptz(3)
+  processedAt DateTime?          @map("processed_at") @db.Timestamptz(3)
+
+  @@unique([provider, externalId])
+  @@index([status, receivedAt])
+  @@map("inbound_events")
+}
