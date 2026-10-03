@@ -1,7 +1,7 @@
 # 6. Webhook ingestion
 
 - Priority: P0
-- Status: Approved
+- Status: Done (verified live on Nile on 2026-10-03)
 
 ## Purpose
 
@@ -22,10 +22,19 @@ provider ─▶ verify signature ─▶ store raw event ─▶ 2xx ─▶ queue 
 
 ## Acceptance criteria
 
-- [ ] A tampered payload is rejected and not stored
-- [ ] The same event delivered 3 times → one charge update, one ledger transaction
-- [ ] A failing job retries and lands in the dead-letter queue after the limit
-- [ ] The endpoint answers in under 200 ms under normal load
+- [x] A tampered payload is rejected and not stored
+- [x] The same event delivered 3 times → one charge update, one ledger transaction
+- [x] A failing job retries and lands in the dead-letter queue after the limit
+- [x] The endpoint answers in under 200 ms under normal load
+
+## Implementation
+
+- Module `apps/api/src/modules/inbound/`: `POST /v1/webhooks/:provider` (no API key; the signature authenticates),
+  raw event storage, `InboundEventsService` (store once, enqueue after commit), HMAC timestamp verifier
+- Worker: `InboundEventsConsumer` (retries, dead-letter), `OutboxRelayService`, `InboundRequeueService`, `DomainEventsConsumer`
+- Chain transfers: the TRON watcher now ingests them as inbound events; `ChainTransferHandler` settles them
+- No provider verifier is registered yet: Stripe (feature 7) adds the first
+- Tests: real Redis and Postgres in containers; duplicates, tampering, retries, dead-letter, relay
 
 ## Out of scope
 

@@ -16,9 +16,9 @@ import { ConfiguredCryptoNetworks } from '../src/modules/crypto/infrastructure/c
 import { tronAddressToHex20 } from '../src/modules/crypto/infrastructure/tron/tron-address';
 import { TronXpubAddressDeriver } from '../src/modules/crypto/infrastructure/tron/tron-xpub-address-deriver';
 import { CreateOrganizationUseCase } from '../src/modules/identity/application/use-cases/create-organization.use-case';
-import { ProcessChainTransfersUseCase } from '../src/modules/payments/application/use-cases/process-chain-transfers.use-case';
+import { IngestChainTransfersUseCase } from '../src/modules/payments/application/use-cases/ingest-chain-transfers.use-case';
 import { PrismaService } from '../src/shared/infrastructure/prisma/prisma.service';
-import { createTestApp } from './setup/create-test-app';
+import { createTestApp, eventually } from './setup/create-test-app';
 
 const TEST_MNEMONIC = // gitleaks:allow (public BIP-39 test vector)
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
@@ -44,19 +44,20 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
   const chain = new ScriptedTransferSource();
 
   beforeAll(async () => {
-    app = await createTestApp(
-      (builder) =>
+    app = await createTestApp({
+      worker: true,
+      customize: (builder) =>
         builder.overrideProvider(CryptoNetworks).useValue(
           new ConfiguredCryptoNetworks({
             'tron-nile': { deriver: new TronXpubAddressDeriver(XPUB), source: chain },
           }),
         ),
-      {
+      env: {
         TRON_FULL_HOST: 'https://nile.trongrid.io',
         TRON_USDT_CONTRACT: 'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
         TRON_DEPOSIT_XPUB: XPUB,
       },
-    );
+    });
     prisma = app.get(PrismaService);
     token = (await app.get(CreateOrganizationUseCase).execute({ name: 'Acme' })).token;
   });
@@ -98,7 +99,17 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     blockTimestamp: new Date(),
   });
 
-  const tick = () => app.get(ProcessChainTransfersUseCase).execute('tron-nile');
+  /** Watcher tick, then wait for the queue to settle every ingested transfer. */
+  const tick = async () => {
+    const result = await app.get(IngestChainTransfersUseCase).execute('tron-nile');
+    await eventually(
+      async () =>
+        (await prisma.inboundEvent.count({
+          where: { provider: 'tron-nile', status: 'received' },
+        })) === 0,
+    );
+    return result;
+  };
   const statusOf = async (chargeId: string) =>
     (await prisma.charge.findUniqueOrThrow({ where: { id: chargeId } })).status;
 
@@ -119,8 +130,8 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     const { charge, attempt, address } = await openUsdtAttempt();
     chain.transfers = [transferTo(address, 10_000_000n)];
 
-    expect(await tick()).toEqual({ relevant: 1, applied: 1, paid: 1 });
-    expect(await tick()).toEqual({ relevant: 1, applied: 0, paid: 0 }); // same transfer again
+    expect(await tick()).toEqual({ relevant: 1, ingested: 1 });
+    expect(await tick()).toEqual({ relevant: 1, ingested: 0 }); // same transfer again
 
     expect(await statusOf(charge.id)).toBe('succeeded');
     const stored = await prisma.paymentAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
@@ -159,7 +170,7 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
   it('ignores transfers to addresses that are not ours', async () => {
     chain.transfers = [{ ...transferTo('TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf', 1n) }];
 
-    expect(await tick()).toEqual({ relevant: 0, applied: 0, paid: 0 });
+    expect(await tick()).toEqual({ relevant: 0, ingested: 0 });
   });
 
   describe('double-entry ledger', () => {

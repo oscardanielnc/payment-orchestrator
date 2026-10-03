@@ -20,9 +20,10 @@ describe('Payment attempts and routing (real Postgres, fake providers)', () => {
 
   beforeAll(async () => {
     // Only Stripe and TRON are "configured": Mercado Pago and Base are unavailable.
-    app = await createTestApp((builder) =>
-      builder.overrideProvider(ENABLED_PAYMENT_PROVIDERS).useValue([card, tron]),
-    );
+    app = await createTestApp({
+      customize: (builder) =>
+        builder.overrideProvider(ENABLED_PAYMENT_PROVIDERS).useValue([card, tron]),
+    });
     prisma = app.get(PrismaService);
     const create = app.get(CreateOrganizationUseCase);
     acme = (await create.execute({ name: 'Acme' })).token;

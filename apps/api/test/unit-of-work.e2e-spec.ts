@@ -18,9 +18,10 @@ describe('unit of work (ADR 0004)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
-    app = await createTestApp((builder) =>
-      builder.overrideProvider(ApiKeyRepository).useClass(FailingApiKeyRepository),
-    );
+    app = await createTestApp({
+      customize: (builder) =>
+        builder.overrideProvider(ApiKeyRepository).useClass(FailingApiKeyRepository),
+    });
   });
 
   afterAll(async () => {

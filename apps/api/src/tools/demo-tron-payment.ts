@@ -1,17 +1,18 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
 import { ConfigError, loadConfig } from '../config/load-config';
 import { loadEnvFileIfPresent } from '../config/load-env-file';
 import { GetChargeUseCase } from '../modules/charges/application/use-cases/get-charge.use-case';
 import { CreateChargeUseCase } from '../modules/charges/application/use-cases/create-charge.use-case';
 import { CreateOrganizationUseCase } from '../modules/identity/application/use-cases/create-organization.use-case';
-import { ProcessChainTransfersUseCase } from '../modules/payments/application/use-cases/process-chain-transfers.use-case';
 import { StartPaymentAttemptUseCase } from '../modules/payments/application/use-cases/start-payment-attempt.use-case';
+import { WorkerModule } from '../worker/worker.module';
 import { createTronPayer, tronscanTx } from './tron-payer-client';
 
 /**
  * Developer tool: the whole USDT flow on Nile in one command, using the real use cases.
+ * Boots the worker in-process (chain watcher, inbound queue, outbox relay), so nothing else
+ * needs to be running apart from Postgres and Redis.
  *   pnpm --filter @po/api demo:tron [amount in minor units, default 1000000 = 1 USDT]
  */
 const POLL_MS = 10_000;
@@ -35,7 +36,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const app = await NestFactory.createApplicationContext(AppModule.register(config), {
+  const app = await NestFactory.createApplicationContext(WorkerModule.register(config), {
     logger: ['error', 'warn'],
   });
   try {
@@ -66,11 +67,10 @@ async function main(): Promise<void> {
     const deadline = Date.now() + TIMEOUT_MS;
     while (Date.now() < deadline) {
       await sleep(POLL_MS);
-      const summary = await app.get(ProcessChainTransfersUseCase).execute('tron-nile');
       const current = await app
         .get(GetChargeUseCase)
         .execute({ organizationId: org.organization.id, chargeId: charge.id });
-      log(`   status ${current.status} (transfers seen: ${summary.relevant})`);
+      log(`   status ${current.status}`);
       if (current.status === 'succeeded') {
         log('6. Paid: charge succeeded and charge.succeeded is in the outbox.');
         return;

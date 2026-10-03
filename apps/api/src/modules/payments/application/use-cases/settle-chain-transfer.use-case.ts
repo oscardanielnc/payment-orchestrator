@@ -2,33 +2,28 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Clock } from '../../../../shared/application/ports/clock';
 import { TransactionRunner } from '../../../../shared/application/ports/transaction-runner';
 import { ChargePaymentsService } from '../../../charges/application/services/charge-payments.service';
+import { chainTransferCodec } from '../../../crypto/application/services/chain-transfer.codec';
 import { ChainTransfersService } from '../../../crypto/application/services/chain-transfers.service';
 import type { ChainTransfer } from '../../../crypto/domain/chain-transfer';
 import type { DepositCredit } from '../../../crypto/domain/deposit-address';
-import type { CryptoNetwork } from '../../../crypto/domain/network';
 import { LedgerService } from '../../../ledger/application/services/ledger.service';
 import { PaymentAttemptRepository } from '../ports/payment-attempt.repository';
 import { chargeSettled, transferReceived } from '../services/payment-postings';
 
-export interface ProcessSummary {
-  relevant: number;
-  applied: number;
-  paid: number;
+export interface SettleResult {
+  applied: boolean;
+  paid: boolean;
 }
 
 /**
- * One watcher tick for a network:
- *   1. read new confirmed transfers to our addresses (network I/O, no transaction)
- *   2. per transfer, ONE transaction:
- *        record it → credit the deposit → ledger: tokens received
- *        if the deposit just reached the amount → charge + attempt succeeded → ledger: settled
- *   3. save the cursor
- * A crash anywhere is safe: transfers are deduplicated by (txHash, eventIndex) and ledger
- * transactions by their external id.
+ * One confirmed transfer, ONE transaction:
+ *   record it → credit the deposit → ledger: tokens received
+ *   if the deposit just reached the amount → charge + attempt succeeded → ledger: settled
+ * Idempotent: the transfer key and the ledger external ids make a second run a no-op.
  */
 @Injectable()
-export class ProcessChainTransfersUseCase {
-  private readonly logger = new Logger(ProcessChainTransfersUseCase.name);
+export class SettleChainTransferUseCase {
+  private readonly logger = new Logger(SettleChainTransferUseCase.name);
 
   constructor(
     private readonly chain: ChainTransfersService,
@@ -39,29 +34,22 @@ export class ProcessChainTransfersUseCase {
     private readonly transaction: TransactionRunner,
   ) {}
 
-  async execute(network: CryptoNetwork): Promise<ProcessSummary> {
-    const { transfers, cursor } = await this.chain.fetchRelevant(network);
-    const summary: ProcessSummary = { relevant: transfers.length, applied: 0, paid: 0 };
+  execute(transfer: ChainTransfer): Promise<SettleResult> {
+    return this.transaction.run(async () => {
+      const credit = await this.chain.applyTransfer(transfer);
+      if (!credit) return { applied: false, paid: false };
 
-    for (const transfer of transfers) {
-      await this.transaction.run(async () => {
-        const credit = await this.chain.applyTransfer(transfer);
-        if (!credit) return; // already applied in an earlier tick
-        summary.applied += 1;
-        await this.ledger.post(
-          transferReceived({
-            credit,
-            network,
-            amount: transfer.amount,
-            externalId: transferKey(transfer),
-          }),
-        );
-        if (credit.justFunded && (await this.settle(credit))) summary.paid += 1;
-      });
-    }
-
-    await this.chain.commitCursor(network, cursor);
-    return summary;
+      await this.ledger.post(
+        transferReceived({
+          credit,
+          network: transfer.network,
+          amount: transfer.amount,
+          externalId: `chain-transfer:${transfer.network}:${chainTransferCodec.externalId(transfer)}`,
+        }),
+      );
+      const paid = credit.justFunded && (await this.settle(credit));
+      return { applied: true, paid };
+    });
   }
 
   private async settle(credit: DepositCredit): Promise<boolean> {
@@ -82,5 +70,3 @@ export class ProcessChainTransfersUseCase {
     return true;
   }
 }
-
-const transferKey = (t: ChainTransfer) => `chain-transfer:${t.network}:${t.txHash}:${t.eventIndex}`;

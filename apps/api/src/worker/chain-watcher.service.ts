@@ -2,7 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } fro
 import { AppConfig } from '../config/app-config';
 import { CryptoNetworks } from '../modules/crypto/application/ports/crypto-networks';
 import type { CryptoNetwork } from '../modules/crypto/domain/network';
-import { ProcessChainTransfersUseCase } from '../modules/payments/application/use-cases/process-chain-transfers.use-case';
+import { IngestChainTransfersUseCase } from '../modules/payments/application/use-cases/ingest-chain-transfers.use-case';
 
 /**
  * Polls every configured network. Ticks never overlap (the next one is scheduled after the
@@ -16,7 +16,7 @@ export class ChainWatcherService implements OnApplicationBootstrap, OnApplicatio
 
   constructor(
     private readonly networks: CryptoNetworks,
-    private readonly process: ProcessChainTransfersUseCase,
+    private readonly ingest: IngestChainTransfersUseCase,
     private readonly config: AppConfig,
   ) {}
 
@@ -44,12 +44,10 @@ export class ChainWatcherService implements OnApplicationBootstrap, OnApplicatio
 
   private async tick(network: CryptoNetwork): Promise<void> {
     try {
-      const summary = await this.process.execute(network);
-      // Re-read transfers (cursor overlap) are expected; only log when something new happened.
-      if (summary.applied > 0) {
-        this.logger.log(
-          `${network}: ${summary.applied} new transfer(s), ${summary.paid} charge(s) paid`,
-        );
+      const summary = await this.ingest.execute(network);
+      // Re-read transfers (cursor overlap) are expected; only log when something new arrived.
+      if (summary.ingested > 0) {
+        this.logger.log(`${network}: ${summary.ingested} new transfer(s) queued for settlement`);
       }
     } catch (error) {
       this.logger.error(`${network} tick failed; retrying next interval`, error as Error);
