@@ -4,6 +4,7 @@ import { ChargesModule } from '../charges/charges.module';
 import { DepositAddressesService } from '../crypto/application/services/deposit-addresses.service';
 import { CryptoModule } from '../crypto/crypto.module';
 import { IdentityModule } from '../identity/identity.module';
+import { LedgerModule } from '../ledger/ledger.module';
 import { PaymentAttemptRepository } from './application/ports/payment-attempt.repository';
 import { PaymentProviderRegistry } from './application/ports/payment-provider-registry';
 import { RoutingTable } from './application/ports/routing-table';
@@ -20,7 +21,7 @@ import { StaticRoutingTable } from './infrastructure/routing/payment-routes';
 import { PaymentAttemptsController } from './presentation/http/payment-attempts.controller';
 
 @Module({
-  imports: [IdentityModule, ChargesModule, CryptoModule],
+  imports: [IdentityModule, ChargesModule, CryptoModule, LedgerModule],
   controllers: [PaymentAttemptsController],
   providers: [
     { provide: RoutingTable, useClass: StaticRoutingTable },

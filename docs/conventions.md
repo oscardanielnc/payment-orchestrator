@@ -61,3 +61,9 @@ Rules the linter cannot enforce.
 - `src/tools/` holds developer tools (testnet wallets, payer); they are outside the layered modules on purpose
 - DI constructor parameters are written as full class types, never type aliases: SWC emits decorator metadata
   from the written type, and an alias becomes `Object`
+
+## Ledger
+
+- Every money movement posts through `LedgerService.post` inside the same unit of work as the state change
+- Each post has an `externalId` derived from the business event (`chain-transfer:…`, `charge-settled:<id>`)
+- Never update or delete ledger rows (triggers will refuse); post a reversal with `reversalEntries()`
