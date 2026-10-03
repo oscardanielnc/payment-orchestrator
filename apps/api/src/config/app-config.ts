@@ -2,7 +2,7 @@ import type { Env } from './env.schema';
 
 export interface StripeConfig {
   secretKey: string;
-  webhookSecret: string | undefined;
+  webhookSecret: string;
 }
 
 export interface TronConfig {
@@ -49,7 +49,7 @@ export class AppConfig {
       env.PAYMENTS_MODE,
       env.DATABASE_URL,
       env.REDIS_URL,
-      env.STRIPE_SECRET_KEY
+      env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET
         ? { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET }
         : undefined,
       // TRON is enabled only when host, token contract and deposit xpub are all configured.

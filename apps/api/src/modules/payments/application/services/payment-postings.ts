@@ -11,8 +11,16 @@ import { Money } from '../../../../shared/domain/money';
  *   merchant:<org>:awaiting        liability  credit-normal  received for a charge not paid yet
  *   merchant:<org>:available       liability  credit-normal  from paid charges: owed to the merchant
  *   merchant:<org>:overpayments    liability  credit-normal  received beyond the charge amount
+ *   platform:<provider>:receivable asset      debit-normal   captured by a card provider, not paid out yet
  */
 export const paymentAccounts = {
+  providerReceivable: (provider: string, currency: string): LedgerAccountRef => ({
+    code: `platform:${provider}:receivable`,
+    currency,
+    name: `Receivable from ${provider}`,
+    normalBalance: 'debit',
+    organizationId: null,
+  }),
   cryptoDeposits: (network: CryptoNetwork, currency: string): LedgerAccountRef => ({
     code: `platform:${network}:deposits`,
     currency,
@@ -107,6 +115,41 @@ export function chargeSettled(credit: DepositCredit): PostInput {
             },
           ]
         : []),
+    ],
+  };
+}
+
+/**
+ * A card provider captured the payment: it now owes us the money (receivable) and we owe it
+ * to the merchant. If the charge had already closed, it waits in `awaiting` for reconciliation.
+ */
+export function providerPaymentCaptured(input: {
+  provider: string;
+  externalReference: string;
+  organizationId: string;
+  chargeId: string;
+  amount: Money;
+  chargePaid: boolean;
+}): PostInput {
+  const { amount, organizationId: org } = input;
+  return {
+    externalId: `provider-payment:${input.provider}:${input.externalReference}`,
+    organizationId: org,
+    reference: input.chargeId,
+    description: `Card payment captured by ${input.provider}`,
+    lines: [
+      {
+        account: paymentAccounts.providerReceivable(input.provider, amount.currency),
+        direction: 'debit',
+        amount,
+      },
+      {
+        account: input.chargePaid
+          ? paymentAccounts.available(org, amount.currency)
+          : paymentAccounts.awaiting(org, amount.currency),
+        direction: 'credit',
+        amount,
+      },
     ],
   };
 }

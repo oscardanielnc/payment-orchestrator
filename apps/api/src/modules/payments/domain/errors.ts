@@ -24,3 +24,12 @@ export class InvalidAttemptTransitionError extends DomainError {
     super(`A ${from} payment attempt cannot become ${to}`);
   }
 }
+
+/** The provider reports a different amount than the charge: never settle silently. */
+export class ProviderAmountMismatchError extends DomainError {
+  readonly code = 'payment.amount_mismatch';
+
+  constructor(expected: string, received: string) {
+    super(`Provider reported ${received}, charge expects ${expected}`);
+  }
+}

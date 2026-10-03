@@ -6,6 +6,7 @@ const validEnv = {
   DATABASE_URL: 'postgresql://orchestrator:orchestrator@localhost:5432/orchestrator',
   REDIS_URL: 'redis://localhost:6379',
   STRIPE_SECRET_KEY: 'sk_test_placeholder', // gitleaks:allow (fake test-mode key)
+  STRIPE_WEBHOOK_SECRET: 'whsec_placeholder', // gitleaks:allow (fake test secret)
   TRON_FULL_HOST: 'https://nile.trongrid.io',
   BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
   BASE_SEPOLIA_CHAIN_ID: '84532',
@@ -45,6 +46,12 @@ describe('loadConfig', () => {
 
     expect(problems).toEqual([expect.stringContaining('STRIPE_SECRET_KEY')]);
     expect(problems.join('\n')).not.toContain(LIVE_STRIPE_KEY);
+  });
+
+  it('requires the webhook secret when a Stripe key is set', () => {
+    const withoutSecret = { ...validEnv, STRIPE_WEBHOOK_SECRET: undefined };
+
+    expect(problemsFor(withoutSecret)).toEqual([expect.stringContaining('STRIPE_WEBHOOK_SECRET')]);
   });
 
   it('rejects any payments mode other than test', () => {

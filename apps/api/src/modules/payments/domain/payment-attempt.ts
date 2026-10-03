@@ -14,6 +14,8 @@ export interface PaymentAttemptProps {
   /** The provider's id for this payment (PaymentIntent id, deposit address...). */
   externalReference: string;
   instructions: PaymentInstructions;
+  /** Last decline reported by the provider while the attempt stays open (e.g. card declined). */
+  failureReason: string | null;
   createdAt: Date;
   updatedAt: Date;
   version: number;
@@ -27,7 +29,10 @@ export class PaymentAttempt {
   private constructor(private props: PaymentAttemptProps) {}
 
   static start(
-    input: Omit<PaymentAttemptProps, 'status' | 'createdAt' | 'updatedAt' | 'version'> & {
+    input: Omit<
+      PaymentAttemptProps,
+      'status' | 'failureReason' | 'createdAt' | 'updatedAt' | 'version'
+    > & {
       now: Date;
     },
   ): PaymentAttempt {
@@ -35,6 +40,7 @@ export class PaymentAttempt {
     return new PaymentAttempt({
       ...rest,
       status: 'pending',
+      failureReason: null,
       createdAt: now,
       updatedAt: now,
       version: 0,
@@ -69,6 +75,9 @@ export class PaymentAttempt {
   get instructions(): PaymentInstructions {
     return this.props.instructions;
   }
+  get failureReason(): string | null {
+    return this.props.failureReason;
+  }
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -77,6 +86,17 @@ export class PaymentAttempt {
   }
   get version(): number {
     return this.props.version;
+  }
+
+  /**
+   * The provider declined one try but the attempt can still succeed (Stripe lets the customer
+   * retry on the same PaymentIntent). Recorded, not terminal.
+   */
+  recordDecline(reason: string, now: Date): void {
+    if (this.props.status !== 'pending')
+      throw new InvalidAttemptTransitionError(this.props.status, 'declined');
+    this.props.failureReason = reason;
+    this.props.updatedAt = now;
   }
 
   markSucceeded(now: Date): void {

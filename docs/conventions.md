@@ -19,18 +19,19 @@ Rules the linter cannot enforce.
 
 ## Commands
 
-| Command                                     | What it does                                                         |
-| ------------------------------------------- | -------------------------------------------------------------------- |
-| `docker compose up -d`                      | Starts Postgres and Redis                                            |
-| `pnpm dev`                                  | Runs every app in watch mode                                         |
-| `pnpm check`                                | lint → typecheck → test → build (same as CI)                         |
-| `pnpm --filter @po/api test:watch`          | API tests in watch mode                                              |
-| `pnpm --filter @po/api db:migrate`          | Creates and applies a migration after editing `prisma/schema.prisma` |
-| `pnpm --filter @po/api org:create "<name>"` | Creates an organization and prints its first API key                 |
-| `pnpm --filter @po/api dev:worker`          | Runs the worker (chain watchers) in watch mode                       |
-| `pnpm --filter @po/api crypto:xpub`         | Creates a testnet deposit wallet and prints its xpub                 |
-| `pnpm --filter @po/api tron:payer …`        | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
-| `pnpm --filter @po/api demo:tron [units]`   | Whole USDT flow on Nile in one command (needs a funded payer)        |
+| Command                                                          | What it does                                                         |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `docker compose up -d`                                           | Starts Postgres and Redis                                            |
+| `pnpm dev`                                                       | Runs every app in watch mode                                         |
+| `pnpm check`                                                     | lint → typecheck → test → build (same as CI)                         |
+| `pnpm --filter @po/api test:watch`                               | API tests in watch mode                                              |
+| `pnpm --filter @po/api db:migrate`                               | Creates and applies a migration after editing `prisma/schema.prisma` |
+| `pnpm --filter @po/api org:create "<name>"`                      | Creates an organization and prints its first API key                 |
+| `pnpm --filter @po/api dev:worker`                               | Runs the worker (chain watchers) in watch mode                       |
+| `pnpm --filter @po/api crypto:xpub`                              | Creates a testnet deposit wallet and prints its xpub                 |
+| `pnpm --filter @po/api tron:payer …`                             | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
+| `pnpm --filter @po/api demo:tron [units]`                        | Whole USDT flow on Nile in one command (needs a funded payer)        |
+| `pnpm --filter @po/api stripe:pay <pi> [visa\|declined\|cancel]` | Plays the card customer in Stripe test mode                          |
 
 ## Testing
 

@@ -20,6 +20,7 @@ function toDomain(row: AttemptRow): PaymentAttempt {
     externalReference: row.externalReference,
     // JSON from the database is validated against the contract before it becomes domain data.
     instructions: PaymentInstructionsSchema.parse(row.instructions),
+    failureReason: row.failureReason,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     version: row.version,
@@ -44,6 +45,7 @@ export class PrismaPaymentAttemptRepository extends PaymentAttemptRepository {
           status: attempt.status,
           externalReference: attempt.externalReference,
           instructions: attempt.instructions,
+          failureReason: attempt.failureReason,
           createdAt: attempt.createdAt,
           updatedAt: attempt.updatedAt,
           version: 1,
@@ -55,7 +57,12 @@ export class PrismaPaymentAttemptRepository extends PaymentAttemptRepository {
 
     const { count } = await this.txHost.tx.paymentAttempt.updateMany({
       where: { id: attempt.id, version: attempt.version },
-      data: { status: attempt.status, updatedAt: attempt.updatedAt, version: { increment: 1 } },
+      data: {
+        status: attempt.status,
+        failureReason: attempt.failureReason,
+        updatedAt: attempt.updatedAt,
+        version: { increment: 1 },
+      },
     });
     if (count === 0) throw new ConcurrencyConflictError('PaymentAttempt');
     attempt.markPersisted(attempt.version + 1);
@@ -63,6 +70,16 @@ export class PrismaPaymentAttemptRepository extends PaymentAttemptRepository {
 
   async findById(id: string): Promise<PaymentAttempt | null> {
     const row = await this.txHost.tx.paymentAttempt.findUnique({ where: { id } });
+    return row ? toDomain(row) : null;
+  }
+
+  async findByExternalReference(
+    provider: string,
+    externalReference: string,
+  ): Promise<PaymentAttempt | null> {
+    const row = await this.txHost.tx.paymentAttempt.findUnique({
+      where: { provider_externalReference: { provider, externalReference } },
+    });
     return row ? toDomain(row) : null;
   }
 

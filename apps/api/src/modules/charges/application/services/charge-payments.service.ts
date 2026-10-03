@@ -35,6 +35,33 @@ export class ChargePaymentsService {
     return { id: charge.id, organizationId: charge.organizationId, amount: charge.amount };
   }
 
+  /** Read-only view of a charge for payment flows. */
+  async snapshot(
+    organizationId: string,
+    chargeId: string,
+  ): Promise<PayableCharge & { status: string }> {
+    const charge = await this.charges.findForOrganization(organizationId, chargeId);
+    if (!charge) throw new ChargeNotFoundError();
+    return {
+      id: charge.id,
+      organizationId: charge.organizationId,
+      amount: charge.amount,
+      status: charge.status,
+    };
+  }
+
+  /** Every attempt failed for good. Returns false if the charge is not processing anymore. */
+  async markFailed(organizationId: string, chargeId: string): Promise<boolean> {
+    const charge = await this.charges.findForOrganization(organizationId, chargeId);
+    if (!charge) throw new ChargeNotFoundError();
+    if (charge.status !== 'processing') return false;
+
+    charge.markFailed(this.clock.now());
+    await this.charges.save(charge);
+    await this.outbox.add(charge.pullEvents());
+    return true;
+  }
+
   /**
    * A provider confirmed the money. Returns false (and changes nothing) if the charge can no
    * longer succeed — e.g. another attempt already paid it — so the caller can flag it.

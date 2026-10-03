@@ -32,6 +32,7 @@ function present(attempt: PaymentAttempt): PaymentAttemptResponse {
     provider: attempt.provider,
     status: attempt.status,
     instructions: attempt.instructions,
+    failureReason: attempt.failureReason,
     createdAt: attempt.createdAt.toISOString(),
   };
 }
