@@ -35,6 +35,13 @@ export function checkPaymentsPolicy(env: Env): PolicyViolation[] {
     });
   }
 
+  if (env.STRIPE_SECRET_KEY !== undefined && env.STRIPE_WEBHOOK_SECRET === undefined) {
+    violations.push({
+      variable: 'STRIPE_WEBHOOK_SECRET',
+      reason: 'is required with STRIPE_SECRET_KEY; without it card payments are never confirmed',
+    });
+  }
+
   for (const variable of ['MERCADOPAGO_ACCESS_TOKEN', 'MERCADOPAGO_WEBHOOK_SECRET'] as const) {
     if (env[variable] !== undefined) {
       violations.push({

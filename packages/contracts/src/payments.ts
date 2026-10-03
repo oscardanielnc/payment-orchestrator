@@ -36,6 +36,8 @@ export const PaymentAttempt = z.object({
   provider: z.string(),
   status: z.enum(['pending', 'succeeded', 'failed']),
   instructions: PaymentInstructions,
+  /** Last decline while the attempt stays open (the customer may retry). */
+  failureReason: z.string().nullable(),
   createdAt: z.iso.datetime(),
 });
 export type PaymentAttempt = z.infer<typeof PaymentAttempt>;

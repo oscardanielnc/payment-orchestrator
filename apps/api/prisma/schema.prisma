@@ -109,6 +109,7 @@ model PaymentAttempt {
   status            AttemptStatus
   externalReference String        @map("external_reference")
   instructions      Json
+  failureReason     String?       @map("failure_reason")
   createdAt         DateTime      @map("created_at") @db.Timestamptz(3)
   updatedAt         DateTime      @map("updated_at") @db.Timestamptz(3)
   version           Int
