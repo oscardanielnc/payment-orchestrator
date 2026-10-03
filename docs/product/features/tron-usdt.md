@@ -1,7 +1,7 @@
 # 8. USDT on TRON Nile
 
 - Priority: P0
-- Status: Done (live test pending: needs a funded Nile payer wallet)
+- Status: Done (verified live on Nile on 2026-10-03: 1 USDT charge paid from the test payer wallet)
 
 ## Purpose
 
