@@ -5,6 +5,7 @@ const validEnv = {
   PAYMENTS_MODE: 'test',
   DATABASE_URL: 'postgresql://orchestrator:orchestrator@localhost:5432/orchestrator',
   REDIS_URL: 'redis://localhost:6379',
+  JWT_ACCESS_SECRET: 'test-access-secret-at-least-32-characters', // gitleaks:allow (fake)
   STRIPE_SECRET_KEY: 'sk_test_placeholder', // gitleaks:allow (fake test-mode key)
   STRIPE_WEBHOOK_SECRET: 'whsec_placeholder', // gitleaks:allow (fake test secret)
   TRON_FULL_HOST: 'https://nile.trongrid.io',
