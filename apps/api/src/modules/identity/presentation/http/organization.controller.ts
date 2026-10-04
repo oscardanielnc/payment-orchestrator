@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { GetOrganizationUseCase } from '../../application/use-cases/get-organization.use-case';
-import { ApiKeyGuard } from './api-key.guard';
+import { MerchantAuthGuard } from './merchant-auth.guard';
 import { CurrentOrganization } from './current-organization.decorator';
 
 @Controller('organization')
-@UseGuards(ApiKeyGuard)
+@UseGuards(MerchantAuthGuard)
 export class OrganizationController {
   constructor(private readonly getOrganization: GetOrganizationUseCase) {}
 

@@ -48,13 +48,14 @@ describe('API key authentication (real Postgres)', () => {
   });
 
   it.each([
-    ['missing', undefined],
-    ['malformed', 'not-a-key'],
-  ])('answers 401 Problem Details for a %s key', async (_label, token) => {
+    ['no credential', undefined, 'auth.unauthenticated'],
+    ['a malformed API key', 'po_test_not-a-key', 'api_key.invalid'],
+    ['something that is neither key nor token', 'not-a-key', 'auth.unauthenticated'],
+  ])('answers 401 Problem Details for %s', async (_label, token, code) => {
     const response = await get('/v1/organization', token).expect(401);
 
     expect(response.headers['content-type']).toContain('application/problem+json');
-    expect(response.body).toMatchObject({ status: 401, code: 'api_key.invalid' });
+    expect(response.body).toMatchObject({ status: 401, code });
   });
 
   it('rejects a key as soon as it is revoked', async () => {

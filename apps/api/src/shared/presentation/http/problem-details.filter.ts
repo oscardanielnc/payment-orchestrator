@@ -35,6 +35,13 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
   'concurrency.conflict': HttpStatus.CONFLICT,
   'webhook.invalid_signature': HttpStatus.BAD_REQUEST,
   'webhook.unknown_provider': HttpStatus.NOT_FOUND,
+  'auth.invalid_credentials': HttpStatus.UNAUTHORIZED,
+  'auth.invalid_session': HttpStatus.UNAUTHORIZED,
+  'auth.unauthenticated': HttpStatus.UNAUTHORIZED,
+  'auth.forbidden': HttpStatus.FORBIDDEN,
+  'user.email_taken': HttpStatus.CONFLICT,
+  'user.invalid_email': HttpStatus.BAD_REQUEST,
+  'user.weak_password': HttpStatus.BAD_REQUEST,
 };
 
 const TITLES: Record<number, string> = {
@@ -44,6 +51,7 @@ const TITLES: Record<number, string> = {
   404: 'Not Found',
   409: 'Conflict',
   422: 'Unprocessable Content',
+  429: 'Too Many Requests',
   500: 'Internal Server Error',
 };
 

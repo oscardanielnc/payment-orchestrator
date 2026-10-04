@@ -5,6 +5,7 @@ import type { App } from 'supertest/types';
 import { inject } from 'vitest';
 import { AppModule } from '../../src/app.module';
 import { loadConfig } from '../../src/config/load-config';
+import { configureApp } from '../../src/configure-app';
 import { QueueConsumersModule } from '../../src/worker/queue-consumers.module';
 
 export interface TestAppOptions {
@@ -28,6 +29,7 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
     PAYMENTS_MODE: 'test',
     DATABASE_URL: inject('databaseUrl'),
     REDIS_URL: inject('redisUrl'),
+    JWT_ACCESS_SECRET: 'e2e-access-secret-at-least-32-characters-long', // gitleaks:allow (fake)
     QUEUE_BACKOFF_MS: '20',
     QUEUE_MAX_ATTEMPTS: '3',
     // Each app gets its own queues: test files run in parallel against one Redis.
@@ -45,7 +47,7 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
     logger: false,
     rawBody: true,
   });
-  app.setGlobalPrefix('v1');
+  configureApp(app, config);
   await app.init();
   return app;
 }

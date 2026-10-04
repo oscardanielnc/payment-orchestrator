@@ -1,12 +1,20 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { InvalidApiKeyError } from '../../domain/errors';
-import type { ApiKeyRequest } from './api-key.guard';
+import type { Principal } from '../../application/principal';
+import { UnauthenticatedError } from '../../domain/errors';
+import type { AuthenticatedRequest } from './merchant-auth.guard';
 
-/** Organization id of the authenticated caller. Only valid behind `ApiKeyGuard`. */
+const principalOf = (context: ExecutionContext): Principal => {
+  const principal = context.switchToHttp().getRequest<AuthenticatedRequest>().principal;
+  if (!principal) throw new UnauthenticatedError();
+  return principal;
+};
+
+/** Organization id of the authenticated caller. Only valid behind `MerchantAuthGuard`. */
 export const CurrentOrganization = createParamDecorator(
-  (_data: unknown, context: ExecutionContext): string => {
-    const request = context.switchToHttp().getRequest<ApiKeyRequest>();
-    if (!request.principal) throw new InvalidApiKeyError();
-    return request.principal.organizationId;
-  },
+  (_data: unknown, context: ExecutionContext): string => principalOf(context).organizationId,
+);
+
+/** The whole principal (organization + who: API key or user). */
+export const CurrentPrincipal = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): Principal => principalOf(context),
 );

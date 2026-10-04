@@ -9,7 +9,7 @@ import { PrismaChargeRepository } from './infrastructure/persistence/prisma/pris
 import { ChargesController } from './presentation/http/charges.controller';
 
 @Module({
-  // ApiKeyGuard comes from identity's public API.
+  // MerchantAuthGuard comes from identity's public API.
   imports: [IdentityModule],
   controllers: [ChargesController],
   providers: [
