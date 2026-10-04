@@ -15,6 +15,7 @@ model Organization {
   createdAt DateTime @map("created_at") @db.Timestamptz(3)
   apiKeys   ApiKey[]
   charges   Charge[]
+  users     User[]
 
   @@map("organizations")
 }
@@ -255,4 +256,55 @@ model InboundEvent {
   @@unique([provider, externalId])
   @@index([status, receivedAt])
   @@map("inbound_events")
+}
+
+enum MemberRole {
+  owner
+  member
+}
+
+/// A dashboard user. MVP: each user belongs to exactly one organization.
+model User {
+  id             String       @id @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  /// Stored lowercased; unique across the platform.
+  email          String       @unique
+  /// argon2id (ADR 0011).
+  passwordHash   String       @map("password_hash")
+  role           MemberRole
+  createdAt      DateTime     @map("created_at") @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  sessions       Session[]
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+/// A login and every refresh token rotated from it (the "family"). Revoking it ends them all.
+model Session {
+  id            String         @id @db.Uuid
+  userId        String         @map("user_id") @db.Uuid
+  createdAt     DateTime       @map("created_at") @db.Timestamptz(3)
+  revokedAt     DateTime?      @map("revoked_at") @db.Timestamptz(3)
+  revokedReason String?        @map("revoked_reason")
+  user          User           @relation(fields: [userId], references: [id])
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Opaque refresh token `<id>.<secret>`; only the SHA-256 of the secret is stored.
+model RefreshToken {
+  id         String    @id @db.Uuid
+  sessionId  String    @map("session_id") @db.Uuid
+  secretHash String    @map("secret_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  /// Set when rotated. Presenting a used token again means it was stolen: the session is revoked.
+  usedAt     DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt  DateTime  @map("created_at") @db.Timestamptz(3)
+  session    Session   @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId])
+  @@map("refresh_tokens")
 }

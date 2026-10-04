@@ -17,7 +17,7 @@ import {
 } from '@po/contracts';
 import { IdempotencyInterceptor } from '../../../../shared/presentation/http/idempotency.interceptor';
 import { ZodValidationPipe } from '../../../../shared/presentation/http/zod-validation.pipe';
-import { ApiKeyGuard } from '../../../identity/presentation/http/api-key.guard';
+import { MerchantAuthGuard } from '../../../identity/presentation/http/merchant-auth.guard';
 import { CurrentOrganization } from '../../../identity/presentation/http/current-organization.decorator';
 import { ListPaymentAttemptsUseCase } from '../../application/use-cases/list-payment-attempts.use-case';
 import { StartPaymentAttemptUseCase } from '../../application/use-cases/start-payment-attempt.use-case';
@@ -38,7 +38,7 @@ function present(attempt: PaymentAttempt): PaymentAttemptResponse {
 }
 
 @Controller('charges/:chargeId/attempts')
-@UseGuards(ApiKeyGuard)
+@UseGuards(MerchantAuthGuard)
 export class PaymentAttemptsController {
   constructor(
     private readonly startAttempt: StartPaymentAttemptUseCase,

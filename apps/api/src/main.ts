@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigError, loadConfig } from './config/load-config';
 import { loadEnvFileIfPresent } from './config/load-env-file';
+import { configureApp } from './configure-app';
 
 async function bootstrap(): Promise<void> {
   loadEnvFileIfPresent();
@@ -10,7 +11,7 @@ async function bootstrap(): Promise<void> {
 
   // rawBody: webhook signatures are checked against the exact bytes received.
   const app = await NestFactory.create(AppModule.register(config), { rawBody: true });
-  app.setGlobalPrefix('v1');
+  configureApp(app, config);
   app.enableShutdownHooks();
   await app.listen(config.apiPort);
 }

@@ -13,6 +13,14 @@ export interface TronConfig {
   pollIntervalMs: number;
 }
 
+export interface AuthConfig {
+  accessTokenSecret: string;
+  accessTokenTtlSeconds: number;
+  refreshTokenTtlDays: number;
+  loginRateLimitPerMinute: number;
+  dashboardOrigins: string[];
+}
+
 export interface QueueConfig {
   maxAttempts: number;
   backoffMs: number;
@@ -40,6 +48,7 @@ export class AppConfig {
     readonly tron: TronConfig | undefined,
     readonly base: BaseConfig | undefined,
     readonly queue: QueueConfig,
+    readonly auth: AuthConfig,
   ) {}
 
   static fromEnv(env: Env): AppConfig {
@@ -73,6 +82,15 @@ export class AppConfig {
         maxAttempts: env.QUEUE_MAX_ATTEMPTS,
         backoffMs: env.QUEUE_BACKOFF_MS,
         prefix: env.QUEUE_PREFIX,
+      },
+      {
+        accessTokenSecret: env.JWT_ACCESS_SECRET,
+        accessTokenTtlSeconds: env.ACCESS_TOKEN_TTL_SECONDS,
+        refreshTokenTtlDays: env.REFRESH_TOKEN_TTL_DAYS,
+        loginRateLimitPerMinute: env.LOGIN_RATE_LIMIT_PER_MINUTE,
+        dashboardOrigins: env.DASHBOARD_ORIGINS.split(',')
+          .map((o) => o.trim())
+          .filter(Boolean),
       },
     );
   }

@@ -1,11 +1,11 @@
 import { Controller, Get, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import type { BalanceList, CurrencyCode, LedgerEntryList } from '@po/contracts';
-import { ApiKeyGuard } from '../../../identity/presentation/http/api-key.guard';
+import { MerchantAuthGuard } from '../../../identity/presentation/http/merchant-auth.guard';
 import { CurrentOrganization } from '../../../identity/presentation/http/current-organization.decorator';
 import { LedgerService } from '../../application/services/ledger.service';
 
 @Controller()
-@UseGuards(ApiKeyGuard)
+@UseGuards(MerchantAuthGuard)
 export class LedgerController {
   constructor(private readonly ledger: LedgerService) {}
 

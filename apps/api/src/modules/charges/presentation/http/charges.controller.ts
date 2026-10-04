@@ -14,7 +14,7 @@ import {
 import { type Charge, type ChargeList, CreateChargeRequest, ListChargesQuery } from '@po/contracts';
 import { IdempotencyInterceptor } from '../../../../shared/presentation/http/idempotency.interceptor';
 import { ZodValidationPipe } from '../../../../shared/presentation/http/zod-validation.pipe';
-import { ApiKeyGuard } from '../../../identity/presentation/http/api-key.guard';
+import { MerchantAuthGuard } from '../../../identity/presentation/http/merchant-auth.guard';
 import { CurrentOrganization } from '../../../identity/presentation/http/current-organization.decorator';
 import { CreateChargeUseCase } from '../../application/use-cases/create-charge.use-case';
 import { GetChargeUseCase } from '../../application/use-cases/get-charge.use-case';
@@ -22,7 +22,7 @@ import { ListChargesUseCase } from '../../application/use-cases/list-charges.use
 import { presentCharge } from './charge.presenter';
 
 @Controller('charges')
-@UseGuards(ApiKeyGuard)
+@UseGuards(MerchantAuthGuard)
 export class ChargesController {
   constructor(
     private readonly createCharge: CreateChargeUseCase,

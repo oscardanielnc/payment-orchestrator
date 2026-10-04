@@ -78,7 +78,7 @@ Confirmation arrives
 
 - `/v1/` prefix, Zod validation (`nestjs-zod`), OpenAPI generated from the contracts
 - Errors: one global filter → RFC 9457 Problem Details with a stable `code`
-- Auth: dashboard (JWT + rotating refresh cookie) and API keys, separate guards ([ADR 0011](../adr/0011-auth.md))
+- Auth: one `MerchantAuthGuard` for API keys and dashboard JWTs; `@Roles('owner')` for key management; rotating refresh cookie ([ADR 0011](../adr/0011-auth.md))
 - `helmet`, `@nestjs/throttler`, CORS allow-list, `nestjs-pino` logs with redaction
 
 ## Crypto

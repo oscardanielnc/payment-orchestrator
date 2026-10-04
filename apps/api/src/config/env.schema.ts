@@ -26,6 +26,14 @@ export const envSchema = z.object({
     .regex(/^[a-z0-9-]+$/)
     .default('po'),
 
+  /** Signs dashboard access tokens (HS256). At least 32 random characters. */
+  JWT_ACCESS_SECRET: z.string({ error: 'is required' }).min(32, 'must be at least 32 characters'),
+  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(14),
+  LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(5),
+  /** Comma-separated origins allowed to call the API from a browser (the dashboard). */
+  DASHBOARD_ORIGINS: z.string().default('http://localhost:5173'),
+
   STRIPE_SECRET_KEY: optional(z.string()),
   STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith('whsec_', 'must start with whsec_')),
 
