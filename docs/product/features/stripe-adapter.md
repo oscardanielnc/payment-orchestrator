@@ -1,7 +1,7 @@
 # 7. Stripe adapter
 
 - Priority: P0
-- Status: Done (pending a live run with the author's Stripe test account)
+- Status: Done (verified live in Stripe test mode on 2026-10-04: approved, declined then retried, canceled)
 
 ## Purpose
 
