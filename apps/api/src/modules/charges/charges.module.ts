@@ -4,6 +4,7 @@ import { ChargeRepository } from './application/ports/charge.repository';
 import { ChargePaymentsService } from './application/services/charge-payments.service';
 import { CreateChargeUseCase } from './application/use-cases/create-charge.use-case';
 import { GetChargeUseCase } from './application/use-cases/get-charge.use-case';
+import { ListChargeEventsUseCase } from './application/use-cases/list-charge-events.use-case';
 import { ListChargesUseCase } from './application/use-cases/list-charges.use-case';
 import { PrismaChargeRepository } from './infrastructure/persistence/prisma/prisma-charge.repository';
 import { ChargesController } from './presentation/http/charges.controller';
@@ -17,6 +18,7 @@ import { ChargesController } from './presentation/http/charges.controller';
     CreateChargeUseCase,
     GetChargeUseCase,
     ListChargesUseCase,
+    ListChargeEventsUseCase,
     ChargePaymentsService,
   ],
   // Public API: other modules use these, never ChargeRepository or the entity.

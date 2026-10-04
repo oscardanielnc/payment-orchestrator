@@ -9,6 +9,7 @@ import {
   ChargeRepository,
 } from '../../../application/ports/charge.repository';
 import type { Charge } from '../../../domain/charge';
+import type { ChargeStatus } from '../../../domain/charge-status';
 import { chargeMapper } from './charge.mapper';
 
 @Injectable()
@@ -48,12 +49,13 @@ export class PrismaChargeRepository extends ChargeRepository {
 
   async listForOrganization(
     organizationId: string,
-    page: { limit: number; after: ChargePosition | null },
+    page: { limit: number; after: ChargePosition | null; status?: ChargeStatus },
   ): Promise<ChargePage> {
     const { after } = page;
     const rows = await this.txHost.tx.charge.findMany({
       where: {
         organizationId,
+        ...(page.status && { status: page.status }),
         // Keyset: strictly after the cursor in (createdAt desc, id desc) order.
         ...(after && {
           OR: [

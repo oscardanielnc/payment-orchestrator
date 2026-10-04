@@ -39,3 +39,23 @@ export const CreatedApiKey = z.object({
   token: z.string(),
 });
 export type CreatedApiKey = z.infer<typeof CreatedApiKey>;
+
+export const ApiKeySummary = z.object({
+  id: z.string(),
+  name: z.string(),
+  prefix: z.string(),
+  createdAt: z.iso.datetime(),
+  lastUsedAt: z.iso.datetime().nullable(),
+  revokedAt: z.iso.datetime().nullable(),
+});
+export type ApiKeySummary = z.infer<typeof ApiKeySummary>;
+
+export const ApiKeyList = z.object({ data: z.array(ApiKeySummary) });
+export type ApiKeyList = z.infer<typeof ApiKeyList>;
+
+export const Organization = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  createdAt: z.iso.datetime(),
+});
+export type Organization = z.infer<typeof Organization>;

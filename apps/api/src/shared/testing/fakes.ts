@@ -46,4 +46,8 @@ export class InMemoryOutbox extends Outbox {
   markPublished(): Promise<void> {
     return Promise.resolve();
   }
+
+  listForAggregate(): Promise<StoredDomainEvent[]> {
+    return Promise.resolve([]);
+  }
 }

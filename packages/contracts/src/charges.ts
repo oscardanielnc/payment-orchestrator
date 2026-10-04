@@ -32,6 +32,7 @@ export type Charge = z.infer<typeof Charge>;
 export const ListChargesQuery = z.strictObject({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().min(1).max(200).optional(),
+  status: ChargeStatus.optional(),
 });
 export type ListChargesQuery = z.infer<typeof ListChargesQuery>;
 
@@ -41,3 +42,13 @@ export const ChargeList = z.object({
   nextCursor: z.string().nullable(),
 });
 export type ChargeList = z.infer<typeof ChargeList>;
+
+/** One step of a charge's history, from its domain events. */
+export const ChargeEvent = z.object({
+  type: z.string(),
+  occurredAt: z.iso.datetime(),
+});
+export type ChargeEvent = z.infer<typeof ChargeEvent>;
+
+export const ChargeEventList = z.object({ data: z.array(ChargeEvent) });
+export type ChargeEventList = z.infer<typeof ChargeEventList>;

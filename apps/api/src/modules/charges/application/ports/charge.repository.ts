@@ -1,4 +1,5 @@
 import type { Charge } from '../../domain/charge';
+import type { ChargeStatus } from '../../domain/charge-status';
 
 /** Position in the list: charges are ordered by `createdAt` desc, then `id` desc. */
 export interface ChargePosition {
@@ -22,6 +23,6 @@ export abstract class ChargeRepository {
   abstract findForOrganization(organizationId: string, id: string): Promise<Charge | null>;
   abstract listForOrganization(
     organizationId: string,
-    page: { limit: number; after: ChargePosition | null },
+    page: { limit: number; after: ChargePosition | null; status?: ChargeStatus },
   ): Promise<ChargePage>;
 }

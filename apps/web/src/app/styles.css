@@ -1,0 +1,3 @@
+@import '../../../../packages/ui/src/styles/tokens.css';
+/* Tailwind scans the shared components too, so their classes are generated. */
+@source '../../../../packages/ui/src';

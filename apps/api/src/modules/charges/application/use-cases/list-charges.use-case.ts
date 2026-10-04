@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Charge } from '../../domain/charge';
+import type { ChargeStatus } from '../../domain/charge-status';
 import { ChargeRepository } from '../ports/charge.repository';
 import { chargeCursor } from '../services/charge-cursor';
 
@@ -11,10 +12,12 @@ export class ListChargesUseCase {
     organizationId: string;
     limit: number;
     cursor?: string;
+    status?: ChargeStatus;
   }): Promise<{ items: Charge[]; nextCursor: string | null }> {
     const page = await this.charges.listForOrganization(input.organizationId, {
       limit: input.limit,
       after: input.cursor ? chargeCursor.decode(input.cursor) : null,
+      status: input.status,
     });
     return {
       items: page.items,

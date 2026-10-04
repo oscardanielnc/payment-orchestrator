@@ -67,4 +67,24 @@ export class PrismaOutbox extends Outbox {
       data: { publishedAt: at },
     });
   }
+
+  async listForAggregate(
+    organizationId: string,
+    aggregateType: string,
+    aggregateId: string,
+  ): Promise<StoredDomainEvent[]> {
+    const rows = await this.txHost.tx.outboxEvent.findMany({
+      where: { organizationId, aggregateType, aggregateId },
+      orderBy: { occurredAt: 'asc' },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      aggregateType: row.aggregateType,
+      aggregateId: row.aggregateId,
+      organizationId: row.organizationId,
+      payload: row.payload as Record<string, unknown>,
+      occurredAt: row.occurredAt,
+    }));
+  }
 }

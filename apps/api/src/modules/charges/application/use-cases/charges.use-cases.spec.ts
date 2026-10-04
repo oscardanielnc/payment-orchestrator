@@ -30,10 +30,12 @@ class InMemoryChargeRepository extends ChargeRepository {
 
   listForOrganization(
     organizationId: string,
-    page: { limit: number; after: ChargePosition | null },
+    page: { limit: number; after: ChargePosition | null; status?: string },
   ): Promise<ChargePage> {
     const sorted = this.rows
-      .filter((c) => c.organizationId === organizationId)
+      .filter(
+        (c) => c.organizationId === organizationId && (!page.status || c.status === page.status),
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id));
     const start = page.after ? sorted.findIndex((c) => c.id === page.after?.id) + 1 : 0;
     const items = sorted.slice(start, start + page.limit);

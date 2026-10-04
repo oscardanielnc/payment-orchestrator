@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import boundaries from 'eslint-plugin-boundaries';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
@@ -16,6 +17,7 @@ export default defineConfig(
       '**/.turbo/**',
       '**/node_modules/**',
       '**/src/generated/**',
+      '**/storybook-static/**',
     ],
   },
   js.configs.recommended,
@@ -94,6 +96,55 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         { patterns: [{ regex: '^[^.]', message: 'The domain only imports other domain code.' }] },
+      ],
+    },
+  },
+  {
+    files: ['apps/web/**/*.tsx', 'apps/web/**/*.ts', 'packages/ui/**/*.tsx', 'packages/ui/**/*.ts'],
+    extends: [reactHooks.configs.flat['recommended-latest']],
+  },
+  {
+    // Frontend: app → features → lib. A feature never imports another feature or the app shell.
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    plugins: { boundaries },
+    settings: {
+      'import/resolver': { node: { extensions: ['.ts', '.tsx', '.js'] } },
+      'boundaries/elements': [
+        { type: 'app', pattern: 'apps/web/src/app' },
+        { type: 'feature', pattern: 'apps/web/src/features/*', capture: ['feature'] },
+        { type: 'lib', pattern: 'apps/web/src/lib' },
+      ],
+    },
+    rules: {
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'allow',
+          policies: [
+            {
+              from: { element: { type: 'feature' } },
+              disallow: { to: { element: { types: { anyOf: ['app'] } } } },
+            },
+            {
+              from: {
+                element: { type: 'feature', captured: { feature: '{{ from.captured.feature }}' } },
+              },
+              disallow: {
+                to: {
+                  element: {
+                    type: 'feature',
+                    captured: { feature: '!{{ from.captured.feature }}' },
+                  },
+                },
+              },
+            },
+            {
+              from: { element: { type: 'lib' } },
+              disallow: { to: { element: { types: { anyOf: ['app', 'feature'] } } } },
+            },
+          ],
+        },
       ],
     },
   },
