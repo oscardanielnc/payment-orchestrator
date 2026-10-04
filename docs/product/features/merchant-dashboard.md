@@ -1,7 +1,7 @@
 # 10. Merchant dashboard
 
 - Priority: P0
-- Status: Approved
+- Status: Done
 
 ## Purpose
 
@@ -18,9 +18,18 @@ What the merchant sees, and the Storybook showcase of the project.
 
 ## Acceptance criteria
 
-- [ ] A member signs in and sees only their organization's data
-- [ ] `10000000` USDT minor units display as 10 USDT (exact format set in design)
-- [ ] Storybook builds statically with a story per real state and accessibility checks on
+- [x] A member signs in and sees only their organization's data
+- [x] `10000000` USDT minor units display as 10 USDT (exact format set in design)
+- [x] Storybook builds statically with a story per real state and accessibility checks on
+
+## How it works
+
+- `apps/web`: `app/` (router, layout) → `features/*` (auth, charges, balances, api-keys) → `lib/` (API client, session);
+  ESLint forbids a feature importing another feature or the app
+- The access token lives in memory; a reload restores it with the httpOnly refresh cookie. Concurrent 401s share one refresh
+- Charge detail polls every 5 s while the charge is open; the payment rail is derived from attempts and ledger entries
+- `packages/ui`: design system with Storybook 10 and the a11y addon (`pnpm --filter @po/ui storybook`)
+- API additions: `GET /v1/charges?status=` and `GET /v1/charges/:id/events`
 
 ## Out of scope
 

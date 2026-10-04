@@ -88,7 +88,8 @@ Confirmation arrives
 
 ## Frontend
 
-- Bulletproof React by feature: `auth`, `charges`, `balances`, `api-keys`, `checkout`
+- Bulletproof React by feature: `auth`, `charges`, `balances`, `api-keys`, `checkout`; `app → features → lib`, enforced by ESLint
+- Shared components in `packages/ui` (Storybook); access token in memory, refresh token in an httpOnly cookie
 - TanStack Query for server data; checkout status by polling ([ADR 0012](../adr/0012-checkout-status.md))
 - Routes split per area so the public checkout never loads dashboard code
 

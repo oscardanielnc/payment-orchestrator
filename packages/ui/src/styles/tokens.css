@@ -1,0 +1,107 @@
+/*
+ * Design tokens from docs/design/tokens.md (direction P1 "Carbon copy", type T2).
+ * Components use the role names (bg-surface, text-muted…), never raw colors, so dark mode
+ * only redefines the variables below.
+ */
+@import 'tailwindcss';
+
+:root {
+  --po-bg: #f6f7f9;
+  --po-surface: #ffffff;
+  --po-surface-accent: #eef1fd;
+  --po-line: #d8dce4;
+  --po-ink: #161b26;
+  --po-muted: #5a6273;
+  --po-accent: #2340c9;
+  --po-on-accent: #ffffff;
+  --po-success: #1b7a4b;
+  --po-warning: #9a5b00;
+  --po-danger: #b42318;
+  --po-neutral: #5a6273;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --po-bg: #0f131b;
+    --po-surface: #171c26;
+    --po-surface-accent: #1c2440;
+    --po-line: #2a3140;
+    --po-ink: #e7eaf0;
+    --po-muted: #9aa3b5;
+    --po-accent: #8ea2ff;
+    --po-on-accent: #0f131b;
+    --po-success: #5bd69a;
+    --po-warning: #f2b54a;
+    --po-danger: #ff8f85;
+    --po-neutral: #9aa3b5;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --po-bg: #0f131b;
+  --po-surface: #171c26;
+  --po-surface-accent: #1c2440;
+  --po-line: #2a3140;
+  --po-ink: #e7eaf0;
+  --po-muted: #9aa3b5;
+  --po-accent: #8ea2ff;
+  --po-on-accent: #0f131b;
+  --po-success: #5bd69a;
+  --po-warning: #f2b54a;
+  --po-danger: #ff8f85;
+  --po-neutral: #9aa3b5;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--po-bg);
+  --color-surface: var(--po-surface);
+  --color-surface-accent: var(--po-surface-accent);
+  --color-line: var(--po-line);
+  --color-ink: var(--po-ink);
+  --color-muted: var(--po-muted);
+  --color-accent: var(--po-accent);
+  --color-on-accent: var(--po-on-accent);
+  --color-success: var(--po-success);
+  --color-warning: var(--po-warning);
+  --color-danger: var(--po-danger);
+  --color-neutral: var(--po-neutral);
+
+  --font-heading: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}
+
+@layer base {
+  body {
+    background: var(--po-bg);
+    color: var(--po-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 22px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--po-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}

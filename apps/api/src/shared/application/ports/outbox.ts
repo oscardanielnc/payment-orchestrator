@@ -16,4 +16,10 @@ export abstract class Outbox {
    */
   abstract claimUnpublished(limit: number): Promise<StoredDomainEvent[]>;
   abstract markPublished(ids: string[], at: Date): Promise<void>;
+  /** History of one aggregate (e.g. a charge's timeline), oldest first, scoped by organization. */
+  abstract listForAggregate(
+    organizationId: string,
+    aggregateType: string,
+    aggregateId: string,
+  ): Promise<StoredDomainEvent[]>;
 }

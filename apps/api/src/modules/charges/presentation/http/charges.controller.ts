@@ -11,13 +11,20 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { type Charge, type ChargeList, CreateChargeRequest, ListChargesQuery } from '@po/contracts';
+import {
+  type Charge,
+  type ChargeEventList,
+  type ChargeList,
+  CreateChargeRequest,
+  ListChargesQuery,
+} from '@po/contracts';
 import { IdempotencyInterceptor } from '../../../../shared/presentation/http/idempotency.interceptor';
 import { ZodValidationPipe } from '../../../../shared/presentation/http/zod-validation.pipe';
 import { MerchantAuthGuard } from '../../../identity/presentation/http/merchant-auth.guard';
 import { CurrentOrganization } from '../../../identity/presentation/http/current-organization.decorator';
 import { CreateChargeUseCase } from '../../application/use-cases/create-charge.use-case';
 import { GetChargeUseCase } from '../../application/use-cases/get-charge.use-case';
+import { ListChargeEventsUseCase } from '../../application/use-cases/list-charge-events.use-case';
 import { ListChargesUseCase } from '../../application/use-cases/list-charges.use-case';
 import { presentCharge } from './charge.presenter';
 
@@ -28,6 +35,7 @@ export class ChargesController {
     private readonly createCharge: CreateChargeUseCase,
     private readonly getCharge: GetChargeUseCase,
     private readonly listCharges: ListChargesUseCase,
+    private readonly listEvents: ListChargeEventsUseCase,
   ) {}
 
   @Post()
@@ -47,6 +55,15 @@ export class ChargesController {
     @Param('id', ParseUUIDPipe) chargeId: string,
   ): Promise<Charge> {
     return presentCharge(await this.getCharge.execute({ organizationId, chargeId }));
+  }
+
+  @Get(':id/events')
+  async events(
+    @CurrentOrganization() organizationId: string,
+    @Param('id', ParseUUIDPipe) chargeId: string,
+  ): Promise<ChargeEventList> {
+    const events = await this.listEvents.execute({ organizationId, chargeId });
+    return { data: events.map((e) => ({ type: e.type, occurredAt: e.occurredAt.toISOString() })) };
   }
 
   @Get()

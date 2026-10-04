@@ -146,4 +146,21 @@ describe('Charges API (real Postgres)', () => {
 
     await expect(repository.save(second)).rejects.toThrow(ConcurrencyConflictError);
   });
+  it('filters the list by status and exposes a charge timeline', async () => {
+    const charge = (await post(usdt, newKey()).expect(201)).body as Charge;
+
+    const pending = (await get('/v1/charges?status=pending&limit=100').expect(200))
+      .body as ChargeList;
+    const succeeded = (await get('/v1/charges?status=succeeded&limit=100').expect(200))
+      .body as ChargeList;
+    expect(pending.data.every((c) => c.status === 'pending')).toBe(true);
+    expect(pending.data.map((c) => c.id)).toContain(charge.id);
+    expect(succeeded.data.map((c) => c.id)).not.toContain(charge.id);
+
+    const timeline = (await get(`/v1/charges/${charge.id}/events`).expect(200)).body as {
+      data: { type: string }[];
+    };
+    expect(timeline.data.map((e) => e.type)).toEqual(['charge.created']);
+    await get(`/v1/charges/${charge.id}/events`, globex.token).expect(404);
+  });
 });
