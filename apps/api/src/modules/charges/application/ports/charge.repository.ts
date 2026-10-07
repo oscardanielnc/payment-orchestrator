@@ -21,6 +21,10 @@ export abstract class ChargeRepository {
   abstract save(charge: Charge): Promise<void>;
   /** Scoped by organization: another organization's charge is `null`, never leaked. */
   abstract findForOrganization(organizationId: string, id: string): Promise<Charge | null>;
+  /** Public lookup for the hosted checkout. Not scoped: the token itself is the capability. */
+  abstract findByCheckoutToken(token: string): Promise<Charge | null>;
+  /** Pending charges whose expiry passed, oldest first; for the expiry sweep. */
+  abstract findPendingExpiredAt(now: Date, limit: number): Promise<Charge[]>;
   abstract listForOrganization(
     organizationId: string,
     page: { limit: number; after: ChargePosition | null; status?: ChargeStatus },

@@ -3,6 +3,7 @@ import type { Env } from './env.schema';
 export interface StripeConfig {
   secretKey: string;
   webhookSecret: string;
+  publishableKey: string;
 }
 
 export interface TronConfig {
@@ -49,6 +50,7 @@ export class AppConfig {
     readonly base: BaseConfig | undefined,
     readonly queue: QueueConfig,
     readonly auth: AuthConfig,
+    readonly checkoutBaseUrl: string,
   ) {}
 
   static fromEnv(env: Env): AppConfig {
@@ -58,8 +60,12 @@ export class AppConfig {
       env.PAYMENTS_MODE,
       env.DATABASE_URL,
       env.REDIS_URL,
-      env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET
-        ? { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET }
+      env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET && env.STRIPE_PUBLISHABLE_KEY
+        ? {
+            secretKey: env.STRIPE_SECRET_KEY,
+            webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+            publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+          }
         : undefined,
       // TRON is enabled only when host, token contract and deposit xpub are all configured.
       env.TRON_FULL_HOST && env.TRON_USDT_CONTRACT && env.TRON_DEPOSIT_XPUB
@@ -92,6 +98,7 @@ export class AppConfig {
           .map((o) => o.trim())
           .filter(Boolean),
       },
+      env.CHECKOUT_BASE_URL.replace(/\/+$/, ''),
     );
   }
 }

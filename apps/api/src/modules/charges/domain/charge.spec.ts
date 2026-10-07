@@ -17,6 +17,7 @@ const newCharge = (amount = 10_000_000n) =>
     organizationId: 'org-1',
     amount: Money.of(amount, 'USDT'),
     reference: 'order-4821',
+    checkoutToken: 'checkout-token-1',
     expiresInSeconds: 1800,
     now: NOW,
   });

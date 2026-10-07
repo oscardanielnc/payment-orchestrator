@@ -9,6 +9,7 @@ import { LedgerModule } from '../ledger/ledger.module';
 import { PaymentAttemptRepository } from './application/ports/payment-attempt.repository';
 import { PaymentProviderRegistry } from './application/ports/payment-provider-registry';
 import { RoutingTable } from './application/ports/routing-table';
+import { ListAvailableMethodsUseCase } from './application/use-cases/list-available-methods.use-case';
 import { ListPaymentAttemptsUseCase } from './application/use-cases/list-payment-attempts.use-case';
 import { ChainTransferHandler } from './application/handlers/chain-transfer.handler';
 import { StripeEventHandler } from './application/handlers/stripe-event.handler';
@@ -62,6 +63,7 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
     { provide: PaymentAttemptRepository, useClass: PrismaPaymentAttemptRepository },
     StartPaymentAttemptUseCase,
     ListPaymentAttemptsUseCase,
+    ListAvailableMethodsUseCase,
     IngestChainTransfersUseCase,
     SettleChainTransferUseCase,
     SettleProviderPaymentUseCase,
@@ -79,6 +81,12 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
       ],
     },
   ],
-  exports: [StartPaymentAttemptUseCase, IngestChainTransfersUseCase, PAYMENT_INBOUND_HANDLERS],
+  exports: [
+    StartPaymentAttemptUseCase,
+    ListPaymentAttemptsUseCase,
+    ListAvailableMethodsUseCase,
+    IngestChainTransfersUseCase,
+    PAYMENT_INBOUND_HANDLERS,
+  ],
 })
 export class PaymentsModule {}

@@ -8,6 +8,7 @@ const validEnv = {
   JWT_ACCESS_SECRET: 'test-access-secret-at-least-32-characters', // gitleaks:allow (fake)
   STRIPE_SECRET_KEY: 'sk_test_placeholder', // gitleaks:allow (fake test-mode key)
   STRIPE_WEBHOOK_SECRET: 'whsec_placeholder', // gitleaks:allow (fake test secret)
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder', // gitleaks:allow (fake test-mode key)
   TRON_FULL_HOST: 'https://nile.trongrid.io',
   BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
   BASE_SEPOLIA_CHAIN_ID: '84532',
@@ -53,6 +54,17 @@ describe('loadConfig', () => {
     const withoutSecret = { ...validEnv, STRIPE_WEBHOOK_SECRET: undefined };
 
     expect(problemsFor(withoutSecret)).toEqual([expect.stringContaining('STRIPE_WEBHOOK_SECRET')]);
+  });
+
+  it('accepts only a test publishable key, and requires it with the secret key', () => {
+    const live = ['pk', 'live', 'placeholder'].join('_');
+
+    expect(problemsFor({ ...validEnv, STRIPE_PUBLISHABLE_KEY: live })).toEqual([
+      expect.stringContaining('STRIPE_PUBLISHABLE_KEY'),
+    ]);
+    expect(problemsFor({ ...validEnv, STRIPE_PUBLISHABLE_KEY: undefined })).toEqual([
+      expect.stringContaining('STRIPE_PUBLISHABLE_KEY'),
+    ]);
   });
 
   it('rejects any payments mode other than test', () => {

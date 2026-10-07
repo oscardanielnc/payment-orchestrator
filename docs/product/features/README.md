@@ -16,7 +16,7 @@ Priority: P0 end-to-end path · P1 completes the MVP · P2 if time allows.
 | 8   | [USDT on TRON Nile](tron-usdt.md)                     | Own on-chain integration for USDT TRC-20 on the Nile testnet | P0       | Done     |
 | 9   | [Double-entry ledger](double-entry-ledger.md)         | Immutable debit/credit entries; balances are derived         | P0       | Done     |
 | 10  | [Merchant dashboard](merchant-dashboard.md)           | Web panel: charges, balances and API keys                    | P0       | Done     |
-| 11  | [Payment links & checkout](payment-links-checkout.md) | Shareable link to a hosted checkout                          | P1       | Approved |
+| 11  | [Payment links & checkout](payment-links-checkout.md) | Shareable link to a hosted checkout                          | P1       | Done     |
 | 12  | [Mercado Pago adapter](mercadopago-adapter.md)        | Local payments through Mercado Pago test credentials         | P1       | Approved |
 | 13  | [USDC on Base Sepolia](base-usdc.md)                  | Own on-chain integration for USDC on Base Sepolia            | P1       | Approved |
 | 14  | [Outbound webhooks](outbound-webhooks.md)             | Notify merchants of charge events, signed and retried        | P1       | Approved |

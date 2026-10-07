@@ -14,6 +14,8 @@ export interface ChargeProps {
   status: ChargeStatus;
   description: string | null;
   reference: string | null;
+  /** Public, non-guessable id of the hosted checkout: /pay/<checkoutToken>. */
+  checkoutToken: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +38,7 @@ export class Charge {
     amount: Money;
     description?: string;
     reference?: string;
+    checkoutToken: string;
     expiresInSeconds: number;
     now: Date;
   }): Charge {
@@ -48,6 +51,7 @@ export class Charge {
       status: 'pending',
       description: input.description ?? null,
       reference: input.reference ?? null,
+      checkoutToken: input.checkoutToken,
       expiresAt: new Date(input.now.getTime() + input.expiresInSeconds * 1000),
       createdAt: input.now,
       updatedAt: input.now,
@@ -78,6 +82,9 @@ export class Charge {
   }
   get reference(): string | null {
     return this.props.reference;
+  }
+  get checkoutToken(): string {
+    return this.props.checkoutToken;
   }
   get expiresAt(): Date {
     return this.props.expiresAt;

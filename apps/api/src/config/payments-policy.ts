@@ -12,6 +12,7 @@ export const TRON_TESTNET_USDT_CONTRACTS = ['TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf'
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 const STRIPE_TEST_KEY = /^(sk|rk)_test_/;
+const STRIPE_TEST_PUBLISHABLE_KEY = /^pk_test_/;
 
 export interface PolicyViolation {
   variable: keyof Env;
@@ -39,6 +40,23 @@ export function checkPaymentsPolicy(env: Env): PolicyViolation[] {
     violations.push({
       variable: 'STRIPE_WEBHOOK_SECRET',
       reason: 'is required with STRIPE_SECRET_KEY; without it card payments are never confirmed',
+    });
+  }
+
+  if (
+    env.STRIPE_PUBLISHABLE_KEY !== undefined &&
+    !STRIPE_TEST_PUBLISHABLE_KEY.test(env.STRIPE_PUBLISHABLE_KEY)
+  ) {
+    violations.push({
+      variable: 'STRIPE_PUBLISHABLE_KEY',
+      reason: 'must be a Stripe test-mode publishable key (pk_test_)',
+    });
+  }
+
+  if (env.STRIPE_SECRET_KEY !== undefined && env.STRIPE_PUBLISHABLE_KEY === undefined) {
+    violations.push({
+      variable: 'STRIPE_PUBLISHABLE_KEY',
+      reason: 'is required with STRIPE_SECRET_KEY; without it the checkout cannot take cards',
     });
   }
 

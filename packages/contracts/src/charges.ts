@@ -23,6 +23,8 @@ export const Charge = z.object({
   status: ChargeStatus,
   description: z.string().nullable(),
   reference: z.string().nullable(),
+  /** Hosted checkout for this charge: send the customer here to pay without an integration. */
+  checkoutUrl: z.url(),
   expiresAt: z.iso.datetime(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

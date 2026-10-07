@@ -31,7 +31,11 @@ describe('dashboard app', () => {
     useSession.setState({ accessToken: null, user: null, ready: true });
     vi.stubGlobal(
       'fetch',
-      vi.fn((input: string) => {
+      vi.fn((input: string, init?: RequestInit) => {
+        if (input === '/v1/charges' && init?.method === 'POST')
+          return Promise.resolve(
+            json({ checkoutUrl: 'http://localhost:5173/pay/q4Yc2T9pX1mBv7Kd0Lz8Wg' }, 201),
+          );
         if (input === '/v1/auth/login')
           return Promise.resolve(
             json({ accessToken: 'a', tokenType: 'Bearer', expiresIn: 900, user }),
@@ -77,5 +81,40 @@ describe('dashboard app', () => {
       '/v1/charges?limit=20&status=failed',
       expect.anything(),
     );
+  });
+
+  it('creates a payment link from a typed amount, sent in minor units', async () => {
+    useSession.setState({ accessToken: 'a', user });
+    renderAt('/charges');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New payment link' }));
+    await userEvent.type(screen.getByLabelText('Amount'), '25.50');
+    await userEvent.type(screen.getByLabelText('Description'), 'Two flat whites');
+    await userEvent.click(screen.getByRole('button', { name: 'Create link' }));
+
+    expect(
+      await screen.findByText('http://localhost:5173/pay/q4Yc2T9pX1mBv7Kd0Lz8Wg'),
+    ).toBeInTheDocument();
+    const [, init] = vi.mocked(fetch).mock.calls.find(([, i]) => i?.method === 'POST') ?? [];
+    expect(JSON.parse(init?.body as string)).toEqual({
+      amount: '2550',
+      currency: 'USD',
+      description: 'Two flat whites',
+    });
+    expect(new Headers(init?.headers).get('Idempotency-Key')).toMatch(/^[\w-]{36}$/);
+  });
+
+  it('refuses an amount the currency cannot represent', async () => {
+    useSession.setState({ accessToken: 'a', user });
+    renderAt('/charges');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New payment link' }));
+    await userEvent.type(screen.getByLabelText('Amount'), '1.999');
+    await userEvent.click(screen.getByRole('button', { name: 'Create link' }));
+
+    expect(screen.getByLabelText('Amount')).toHaveAccessibleDescription(
+      'Enter a positive amount in USD',
+    );
+    expect(vi.mocked(fetch)).not.toHaveBeenCalledWith('/v1/charges', expect.anything());
   });
 });

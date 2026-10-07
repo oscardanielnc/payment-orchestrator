@@ -34,7 +34,11 @@ describe('Stripe card payments (fake Stripe API, real webhooks signature, Postgr
   beforeAll(async () => {
     app = await createTestApp({
       worker: true,
-      env: { STRIPE_SECRET_KEY: SECRET_KEY, STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET },
+      env: {
+        STRIPE_SECRET_KEY: SECRET_KEY,
+        STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET,
+        STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder', // gitleaks:allow (fake test-mode key)
+      },
       customize: (builder) => builder.overrideProvider(STRIPE_CLIENT).useValue(fakeStripe),
     });
     prisma = app.get(PrismaService);

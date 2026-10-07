@@ -95,6 +95,7 @@ import { RolesGuard } from './presentation/http/roles.guard';
   // Public API of the module (other modules use these, never the repositories).
   exports: [
     MerchantAuthGuard,
+    GetOrganizationUseCase,
     RolesGuard,
     AuthenticateApiKeyUseCase,
     AuthenticateAccessTokenUseCase,

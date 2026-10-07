@@ -90,3 +90,5 @@ Rules the linter cannot enforce.
   `@CurrentOrganization()` or `@CurrentPrincipal()`
 - Anything that manages credentials or members adds `RolesGuard` + `@Roles('owner')`: API keys never pass it
 - The refresh token only ever lives in the `po_refresh` cookie; never return it in a body or log it
+- Public endpoints (no guard) are only under `/v1/checkout`: they take a checkout token, add
+  `ThrottlerGuard`, and return a view without ids or merchant references

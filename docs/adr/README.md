@@ -21,3 +21,4 @@ Template: [template.md](template.md).
 | [0014](0014-charges-concurrency-and-pagination.md) | Charges: optimistic locking and keyset pagination                           | Accepted |
 | [0015](0015-payment-providers-and-routing.md)      | Payment providers: one port, an enabled-providers registry, routing as data | Accepted |
 | [0016](0016-card-declines-keep-charges-open.md)    | A card decline does not close the charge                                    | Accepted |
+| [0017](0017-payment-links-and-public-checkout.md)  | Payment links: a checkout token per charge and a public checkout API        | Accepted |

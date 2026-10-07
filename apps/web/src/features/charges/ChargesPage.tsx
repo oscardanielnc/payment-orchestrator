@@ -5,8 +5,10 @@ import { StatusChip } from '@po/ui/data-display/StatusChip/StatusChip';
 import { EmptyState, ErrorState, Skeleton } from '@po/ui/feedback/States/States';
 import { PageHeader } from '@po/ui/layout/AppShell/AppShell';
 import { Button } from '@po/ui/primitives/Button/Button';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useCharges } from './api';
+import { NewPaymentLink } from './NewPaymentLink';
 
 const FILTERS: { label: string; value?: ChargeStatus }[] = [
   { label: 'All' },
@@ -50,14 +52,20 @@ export function ChargesPage() {
   const status = (params.get('status') as ChargeStatus | null) ?? undefined;
   const charges = useCharges(status);
   const rows = charges.data?.pages.flatMap((page) => page.data) ?? [];
+  const [creating, setCreating] = useState(false);
 
   return (
     <>
-      <PageHeader title="Charges">
+      <PageHeader
+        title="Charges"
+        actions={!creating && <Button onClick={() => setCreating(true)}>New payment link</Button>}
+      >
         <p className="text-sm text-muted">
           Every charge created through the API or a payment link.
         </p>
       </PageHeader>
+
+      {creating && <NewPaymentLink onClose={() => setCreating(false)} />}
 
       <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-2">
         {FILTERS.map((filter) => {

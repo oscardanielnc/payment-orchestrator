@@ -19,3 +19,21 @@ export function formatMinorUnits(amount: string, currency: string): string {
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `${negative ? '-' : ''}${grouped}${fraction ? `.${fraction}` : ''}`;
 }
+
+/**
+ * What a person types (major units) → minor units string, or `null` if it is not a valid
+ * positive amount for that currency. String arithmetic again: '19.99' never becomes 19.989999.
+ *   parseMajorUnits('19.99', 'USD')      → '1999'
+ *   parseMajorUnits('1,250', 'USD')      → '125000'
+ *   parseMajorUnits('0.1234567', 'USDT') → null (more than 6 decimals)
+ */
+export function parseMajorUnits(input: string, currency: string): string | null {
+  const decimals = DECIMALS[currency] ?? 2;
+  const match = /^(\d+)(?:\.(\d*))?$/.exec(input.trim().replace(/,/g, ''));
+  if (!match) return null;
+  const [, whole = '', fraction = ''] = match;
+  if (fraction.length > decimals) return null;
+
+  const minor = (whole + fraction.padEnd(decimals, '0')).replace(/^0+(?=\d)/, '');
+  return /^0+$/.test(minor) ? null : minor;
+}

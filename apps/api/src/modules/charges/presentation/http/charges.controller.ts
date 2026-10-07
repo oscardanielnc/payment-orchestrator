@@ -18,6 +18,7 @@ import {
   CreateChargeRequest,
   ListChargesQuery,
 } from '@po/contracts';
+import { AppConfig } from '../../../../config/app-config';
 import { IdempotencyInterceptor } from '../../../../shared/presentation/http/idempotency.interceptor';
 import { ZodValidationPipe } from '../../../../shared/presentation/http/zod-validation.pipe';
 import { MerchantAuthGuard } from '../../../identity/presentation/http/merchant-auth.guard';
@@ -26,6 +27,7 @@ import { CreateChargeUseCase } from '../../application/use-cases/create-charge.u
 import { GetChargeUseCase } from '../../application/use-cases/get-charge.use-case';
 import { ListChargeEventsUseCase } from '../../application/use-cases/list-charge-events.use-case';
 import { ListChargesUseCase } from '../../application/use-cases/list-charges.use-case';
+import type { Charge as ChargeEntity } from '../../domain/charge';
 import { presentCharge } from './charge.presenter';
 
 @Controller('charges')
@@ -36,7 +38,11 @@ export class ChargesController {
     private readonly getCharge: GetChargeUseCase,
     private readonly listCharges: ListChargesUseCase,
     private readonly listEvents: ListChargeEventsUseCase,
+    private readonly config: AppConfig,
   ) {}
+
+  private present = (charge: ChargeEntity): Charge =>
+    presentCharge(charge, this.config.checkoutBaseUrl);
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -46,7 +52,7 @@ export class ChargesController {
     @Body(new ZodValidationPipe(CreateChargeRequest)) body: CreateChargeRequest,
   ): Promise<Charge> {
     const charge = await this.createCharge.execute({ organizationId, ...body });
-    return presentCharge(charge);
+    return this.present(charge);
   }
 
   @Get(':id')
@@ -54,7 +60,7 @@ export class ChargesController {
     @CurrentOrganization() organizationId: string,
     @Param('id', ParseUUIDPipe) chargeId: string,
   ): Promise<Charge> {
-    return presentCharge(await this.getCharge.execute({ organizationId, chargeId }));
+    return this.present(await this.getCharge.execute({ organizationId, chargeId }));
   }
 
   @Get(':id/events')
@@ -72,6 +78,6 @@ export class ChargesController {
     @Query(new ZodValidationPipe(ListChargesQuery)) query: ListChargesQuery,
   ): Promise<ChargeList> {
     const page = await this.listCharges.execute({ organizationId, ...query });
-    return { data: page.items.map(presentCharge), nextCursor: page.nextCursor };
+    return { data: page.items.map(this.present), nextCursor: page.nextCursor };
   }
 }

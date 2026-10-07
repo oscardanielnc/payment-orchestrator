@@ -36,6 +36,7 @@ export class CreateChargeUseCase {
       amount: Money.fromMinorUnits(input.amount, input.currency),
       description: input.description,
       reference: input.reference,
+      checkoutToken: this.ids.secureToken(),
       expiresInSeconds: input.expiresInSeconds ?? DEFAULT_EXPIRY_SECONDS,
       now: this.clock.now(),
     });
