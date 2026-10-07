@@ -4,6 +4,7 @@ import { AppConfig } from './config/app-config';
 import { ConfigModule } from './config/config.module';
 import { HealthController } from './health/health.controller';
 import { ChargesModule } from './modules/charges/charges.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InboundModule } from './modules/inbound/inbound.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
@@ -24,6 +25,7 @@ export class AppModule {
         IdentityModule,
         ChargesModule,
         PaymentsModule,
+        CheckoutModule,
         LedgerModule,
         InboundModule,
       ],

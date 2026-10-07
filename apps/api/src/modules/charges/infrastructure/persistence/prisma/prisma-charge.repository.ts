@@ -47,6 +47,20 @@ export class PrismaChargeRepository extends ChargeRepository {
     return row ? chargeMapper.toDomain(row) : null;
   }
 
+  async findByCheckoutToken(token: string): Promise<Charge | null> {
+    const row = await this.txHost.tx.charge.findUnique({ where: { checkoutToken: token } });
+    return row ? chargeMapper.toDomain(row) : null;
+  }
+
+  async findPendingExpiredAt(now: Date, limit: number): Promise<Charge[]> {
+    const rows = await this.txHost.tx.charge.findMany({
+      where: { status: 'pending', expiresAt: { lte: now } },
+      orderBy: { expiresAt: 'asc' },
+      take: limit,
+    });
+    return rows.map((row) => chargeMapper.toDomain(row));
+  }
+
   async listForOrganization(
     organizationId: string,
     page: { limit: number; after: ChargePosition | null; status?: ChargeStatus },

@@ -33,8 +33,14 @@ export const envSchema = z.object({
   LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(5),
   /** Comma-separated origins allowed to call the API from a browser (the dashboard). */
   DASHBOARD_ORIGINS: z.string().default('http://localhost:5173'),
+  /** Public checkout page; a charge's checkoutUrl is this plus its checkout token. */
+  CHECKOUT_BASE_URL: z
+    .url({ protocol: /^https?$/, error: 'must be an http(s) URL' })
+    .default('http://localhost:5173/pay'),
 
   STRIPE_SECRET_KEY: optional(z.string()),
+  /** Public key for Stripe.js in the checkout (pk_test_). Not a secret, but still test-only. */
+  STRIPE_PUBLISHABLE_KEY: optional(z.string()),
   STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith('whsec_', 'must start with whsec_')),
 
   MERCADOPAGO_ACCESS_TOKEN: optional(z.string()),

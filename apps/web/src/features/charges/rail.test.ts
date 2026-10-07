@@ -10,6 +10,7 @@ const charge = (status: Charge['status']): Charge => ({
   status,
   description: null,
   reference: null,
+  checkoutUrl: 'http://localhost:5173/pay/q4Yc2T9pX1mBv7Kd0Lz8Wg',
   expiresAt: '2026-10-04T12:30:00.000Z',
   createdAt: '2026-10-04T12:00:00.000Z',
   updatedAt: '2026-10-04T12:00:00.000Z',

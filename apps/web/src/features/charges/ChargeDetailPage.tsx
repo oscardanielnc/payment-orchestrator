@@ -1,5 +1,6 @@
 import type { LedgerEntry, PaymentAttempt } from '@po/contracts';
 import { Amount } from '@po/ui/data-display/Amount/Amount';
+import { CopyValue } from '@po/ui/data-display/CopyValue/CopyValue';
 import { DataTable } from '@po/ui/data-display/DataTable/DataTable';
 import { PaymentRail } from '@po/ui/data-display/PaymentRail/PaymentRail';
 import { StatusChip } from '@po/ui/data-display/StatusChip/StatusChip';
@@ -96,6 +97,10 @@ export function ChargeDetailPage() {
           <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
             <dt className="text-muted">ID</dt>
             <dd className="font-mono text-[13px] break-all">{c.id}</dd>
+            <dt className="text-muted">Payment link</dt>
+            <dd className="min-w-0">
+              <CopyValue label="payment link" value={c.checkoutUrl} />
+            </dd>
             <dt className="text-muted">Reference</dt>
             <dd className="font-mono text-[13px]">{c.reference ?? '—'}</dd>
             <dt className="text-muted">Created</dt>

@@ -11,7 +11,7 @@ apps/
   api/        NestJS. Two entrypoints over one codebase (ADR 0003):
               main.ts   → HTTP API
               worker.ts → queue consumers, chain watchers, outbox relay, schedulers
-  web/        React + Vite. Merchant dashboard + public checkout (/pay/:id)
+  web/        React + Vite. Merchant dashboard + public checkout (/pay/:token)
 packages/
   contracts/  Zod schemas + types of the API. Single source of truth
   ui/         Component system + Storybook
@@ -34,6 +34,7 @@ Every module is hexagonal ([ADR 0002](../adr/0002-hexagonal-modules.md)):
 | `payments`       | Payment attempts, routing table, provider registry; card/local adapters (Stripe, Mercado Pago) | `PaymentProvider`                                      |
 | `crypto`         | Deposit addresses, chain watchers (TRON, EVM); its adapters also implement `PaymentProvider`   | `AddressDeriver`, `BlockchainWatcher`                  |
 | `inbound`        | Webhooks and chain transfers: verify, store raw, enqueue after commit                          | `WebhookVerifier`, `RawEventStore`                     |
+| `checkout`       | Public read model and method choice for a payment link; composes charges, identity, payments   | —                                                      |
 | `ledger`         | Accounts, entries, balances                                                                    | `LedgerRepository`                                     |
 | `notifications`  | Outbound merchant webhooks                                                                     | `WebhookSender`                                        |
 | `reconciliation` | Provider vs ledger findings                                                                    | `ProviderStatement`                                    |
@@ -91,7 +92,7 @@ Confirmation arrives
 - Bulletproof React by feature: `auth`, `charges`, `balances`, `api-keys`, `checkout`; `app → features → lib`, enforced by ESLint
 - Shared components in `packages/ui` (Storybook); access token in memory, refresh token in an httpOnly cookie
 - TanStack Query for server data; checkout status by polling ([ADR 0012](../adr/0012-checkout-status.md))
-- Routes split per area so the public checkout never loads dashboard code
+- Every route is a lazy chunk, so the public checkout never loads dashboard code (and vice versa)
 
 ## Testing
 

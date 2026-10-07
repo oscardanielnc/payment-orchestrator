@@ -10,6 +10,8 @@ import { Charge } from '../../domain/charge';
 import { ChargeNotFoundError, InvalidChargeCursorError } from '../../domain/errors';
 import { ChargePage, ChargePosition, ChargeRepository } from '../ports/charge.repository';
 import { CreateChargeUseCase, DEFAULT_EXPIRY_SECONDS } from './create-charge.use-case';
+import { ExpireChargesUseCase } from './expire-charges.use-case';
+import { GetChargeByCheckoutTokenUseCase } from './get-charge-by-checkout-token.use-case';
 import { GetChargeUseCase } from './get-charge.use-case';
 import { ListChargesUseCase } from './list-charges.use-case';
 
@@ -25,6 +27,16 @@ class InMemoryChargeRepository extends ChargeRepository {
   findForOrganization(organizationId: string, id: string): Promise<Charge | null> {
     return Promise.resolve(
       this.rows.find((c) => c.id === id && c.organizationId === organizationId) ?? null,
+    );
+  }
+
+  findByCheckoutToken(token: string): Promise<Charge | null> {
+    return Promise.resolve(this.rows.find((c) => c.checkoutToken === token) ?? null);
+  }
+
+  findPendingExpiredAt(now: Date, limit: number): Promise<Charge[]> {
+    return Promise.resolve(
+      this.rows.filter((c) => c.status === 'pending' && c.isExpiredAt(now)).slice(0, limit),
     );
   }
 
@@ -88,6 +100,40 @@ describe('charges use cases', () => {
     expect(outbox.events).toEqual([
       expect.objectContaining({ type: 'charge.created', aggregateId: charge.id }),
     ]);
+  });
+
+  it('gives every charge its own checkout token and finds it by that token only', async () => {
+    const first = await createAt(0);
+    const second = await createAt(1);
+    const byToken = new GetChargeByCheckoutTokenUseCase(charges);
+
+    expect(first.checkoutToken).not.toBe(second.checkoutToken);
+    await expect(byToken.execute(second.checkoutToken)).resolves.toBe(second);
+    await expect(byToken.execute(second.id)).rejects.toThrow(ChargeNotFoundError);
+  });
+
+  it('expires pending charges past their expiry and leaves the rest alone', async () => {
+    const stale = await createAt(0);
+    const paying = await createAt(1);
+    const fresh = await createAt(50);
+    paying.beginPaymentAttempt(new Date(Date.UTC(2026, 9, 1, 12, 2)));
+    outbox.events.length = 0;
+    clock.current = new Date(stale.expiresAt.getTime() + 60_000);
+
+    const expired = await new ExpireChargesUseCase(
+      charges,
+      outbox,
+      clock,
+      new ImmediateTransactionRunner(),
+    ).execute();
+
+    expect(expired).toBe(1);
+    expect([stale.status, paying.status, fresh.status]).toEqual([
+      'expired',
+      'processing',
+      'pending',
+    ]);
+    expect(outbox.events.map((e) => e.type)).toEqual(['charge.expired']);
   });
 
   it('rejects an unsupported currency before touching storage', async () => {

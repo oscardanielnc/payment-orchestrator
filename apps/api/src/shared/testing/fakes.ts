@@ -23,6 +23,11 @@ export class SequentialIdGenerator extends IdGenerator {
     this.counter += 1;
     return `00000000-0000-4000-8000-${String(this.counter).padStart(12, '0')}`;
   }
+
+  secureToken(): string {
+    this.counter += 1;
+    return `token${String(this.counter).padStart(17, '0')}`;
+  }
 }
 
 export class ImmediateTransactionRunner extends TransactionRunner {

@@ -1,4 +1,5 @@
 import type { ApiKeyList, ApiKeySummary, CreatedApiKey } from '@po/contracts';
+import { CopyValue } from '@po/ui/data-display/CopyValue/CopyValue';
 import { DataTable } from '@po/ui/data-display/DataTable/DataTable';
 import { ErrorState, Skeleton } from '@po/ui/feedback/States/States';
 import { TextField } from '@po/ui/forms/TextField/TextField';
@@ -88,14 +89,8 @@ export function ApiKeysPage() {
           <p className="text-sm font-semibold">
             Copy “{created.name}” now: it will not be shown again.
           </p>
-          <code className="font-mono text-[13px] break-all">{created.token}</code>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => void navigator.clipboard.writeText(created.token)}
-            >
-              Copy
-            </Button>
+          <CopyValue label="API key" value={created.token} />
+          <div>
             <Button variant="secondary" onClick={() => setCreated(null)}>
               Done
             </Button>
