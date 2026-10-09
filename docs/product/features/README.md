@@ -19,7 +19,7 @@ Priority: P0 end-to-end path · P1 completes the MVP · P2 if time allows.
 | 11  | [Payment links & checkout](payment-links-checkout.md) | Shareable link to a hosted checkout                          | P1       | Done     |
 | 12  | [Mercado Pago adapter](mercadopago-adapter.md)        | Local payments through Mercado Pago test credentials         | P1       | Approved |
 | 13  | [USDC on Base Sepolia](base-usdc.md)                  | Own on-chain integration for USDC on Base Sepolia            | P1       | Approved |
-| 14  | [Outbound webhooks](outbound-webhooks.md)             | Notify merchants of charge events, signed and retried        | P1       | Approved |
+| 14  | [Outbound webhooks](outbound-webhooks.md)             | Notify merchants of charge events, signed and retried        | P1       | Done     |
 | 15  | [Reconciliation](reconciliation.md)                   | Daily comparison of providers vs ledger                      | P2       | Approved |
 
 ## Build order

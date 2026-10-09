@@ -33,6 +33,13 @@ export const envSchema = z.object({
   LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(5),
   /** Comma-separated origins allowed to call the API from a browser (the dashboard). */
   DASHBOARD_ORIGINS: z.string().default('http://localhost:5173'),
+  /** AES-256-GCM key for webhook signing secrets at rest: 32 random bytes, base64. */
+  WEBHOOK_SECRETS_KEY: z
+    .string({ error: 'is required' })
+    .refine((v) => Buffer.from(v, 'base64').length === 32, 'must be 32 bytes in base64'),
+  WEBHOOK_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(8),
+  /** First webhook retry delay; doubles each attempt. */
+  WEBHOOK_BACKOFF_MS: z.coerce.number().int().min(1).default(30_000),
   /** Public checkout page; a charge's checkoutUrl is this plus its checkout token. */
   CHECKOUT_BASE_URL: z
     .url({ protocol: /^https?$/, error: 'must be an http(s) URL' })

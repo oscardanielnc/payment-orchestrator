@@ -8,6 +8,7 @@ import { CheckoutModule } from './modules/checkout/checkout.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InboundModule } from './modules/inbound/inbound.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ProblemDetailsFilter } from './shared/presentation/http/problem-details.filter';
 import { QueueModule } from './shared/infrastructure/queue/queue.module';
@@ -27,6 +28,7 @@ export class AppModule {
         PaymentsModule,
         CheckoutModule,
         LedgerModule,
+        NotificationsModule,
         InboundModule,
       ],
       controllers: [HealthController],

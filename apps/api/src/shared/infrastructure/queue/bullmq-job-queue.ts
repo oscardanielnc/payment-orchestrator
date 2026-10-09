@@ -11,12 +11,14 @@ export class BullMqJobQueue extends JobQueue {
     @InjectQueue(QUEUES.inboundEvents) inbound: Queue,
     @InjectQueue(QUEUES.domainEvents) domain: Queue,
     @InjectQueue(QUEUES.deadLetter) deadLetter: Queue,
+    @InjectQueue(QUEUES.webhookDeliveries) webhooks: Queue,
   ) {
     super();
     this.queues = {
       [QUEUES.inboundEvents]: inbound,
       [QUEUES.domainEvents]: domain,
       [QUEUES.deadLetter]: deadLetter,
+      [QUEUES.webhookDeliveries]: webhooks,
     };
   }
 
