@@ -6,12 +6,13 @@ Test mode only: the app refuses `sk_live_` keys.
 
 1. Create a free Stripe account and stay in **Test mode** → Developers → API keys → copy the secret key (`sk_test_…`)
 2. Install and log in to the Stripe CLI: `winget install Stripe.StripeCli` then `stripe login`
-3. In `.env`: `STRIPE_SECRET_KEY=sk_test_…`
+3. In `.env`: `STRIPE_SECRET_KEY=sk_test_…` and `STRIPE_PUBLISHABLE_KEY=pk_test_…` (same page)
 
 ## Every time
 
 ```sh
-stripe listen --forward-to localhost:3000/v1/webhooks/stripe   # terminal 1: prints whsec_… (put it in STRIPE_WEBHOOK_SECRET once)
+stripe listen --events payment_intent.succeeded,payment_intent.payment_failed,payment_intent.canceled --forward-to localhost:3000/v1/webhooks/stripe
+# terminal 1: prints whsec_… (put it in STRIPE_WEBHOOK_SECRET once). Stripe CLI 1.53+ requires --events
 pnpm --filter @po/api build
 pnpm --filter @po/api start                                    # terminal 2: API
 pnpm --filter @po/api start:worker                             # terminal 3: worker

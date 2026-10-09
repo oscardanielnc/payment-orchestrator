@@ -14,7 +14,13 @@ const NAV = [
       { label: 'Balances', href: '/balances' },
     ],
   },
-  { group: 'Developers', items: [{ label: 'API keys', href: '/api-keys' }] },
+  {
+    group: 'Developers',
+    items: [
+      { label: 'API keys', href: '/api-keys' },
+      { label: 'Webhooks', href: '/webhooks' },
+    ],
+  },
 ];
 
 export function DashboardLayout() {

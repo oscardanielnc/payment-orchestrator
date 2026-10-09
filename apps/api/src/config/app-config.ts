@@ -28,6 +28,14 @@ export interface QueueConfig {
   prefix: string;
 }
 
+export interface WebhooksConfig {
+  secretsKey: string;
+  maxAttempts: number;
+  backoffMs: number;
+  /** Endpoints may point at http://localhost outside production (local test receiver). */
+  allowLocalHttp: boolean;
+}
+
 export interface BaseConfig {
   rpcUrl: string;
   chainId: number;
@@ -51,6 +59,7 @@ export class AppConfig {
     readonly queue: QueueConfig,
     readonly auth: AuthConfig,
     readonly checkoutBaseUrl: string,
+    readonly webhooks: WebhooksConfig,
   ) {}
 
   static fromEnv(env: Env): AppConfig {
@@ -99,6 +108,12 @@ export class AppConfig {
           .filter(Boolean),
       },
       env.CHECKOUT_BASE_URL.replace(/\/+$/, ''),
+      {
+        secretsKey: env.WEBHOOK_SECRETS_KEY,
+        maxAttempts: env.WEBHOOK_MAX_ATTEMPTS,
+        backoffMs: env.WEBHOOK_BACKOFF_MS,
+        allowLocalHttp: env.NODE_ENV !== 'production',
+      },
     );
   }
 }

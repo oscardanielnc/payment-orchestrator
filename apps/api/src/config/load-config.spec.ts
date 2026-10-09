@@ -9,6 +9,7 @@ const validEnv = {
   STRIPE_SECRET_KEY: 'sk_test_placeholder', // gitleaks:allow (fake test-mode key)
   STRIPE_WEBHOOK_SECRET: 'whsec_placeholder', // gitleaks:allow (fake test secret)
   STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder', // gitleaks:allow (fake test-mode key)
+  WEBHOOK_SECRETS_KEY: Buffer.alloc(32, 7).toString('base64'), // fake key, not random
   TRON_FULL_HOST: 'https://nile.trongrid.io',
   BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
   BASE_SEPOLIA_CHAIN_ID: '84532',

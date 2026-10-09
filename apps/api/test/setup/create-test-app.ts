@@ -31,6 +31,9 @@ export async function createTestApp(options: TestAppOptions = {}): Promise<INest
     REDIS_URL: inject('redisUrl'),
     JWT_ACCESS_SECRET: 'e2e-access-secret-at-least-32-characters-long', // gitleaks:allow (fake)
     QUEUE_BACKOFF_MS: '20',
+    WEBHOOK_SECRETS_KEY: Buffer.alloc(32, 7).toString('base64'), // fake key, not random
+    WEBHOOK_BACKOFF_MS: '20',
+    WEBHOOK_MAX_ATTEMPTS: '3',
     QUEUE_MAX_ATTEMPTS: '3',
     // Each app gets its own queues: test files run in parallel against one Redis.
     QUEUE_PREFIX: `test-${randomUUID().slice(0, 8)}`,

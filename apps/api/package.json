@@ -20,6 +20,7 @@
     "tron:payer": "nest build && node dist/tools/tron-test-payer.js",
     "demo:tron": "nest build && node dist/tools/demo-tron-payment.js",
     "stripe:pay": "nest build && node dist/tools/stripe-pay.js",
+    "webhook:receiver": "nest build && node dist/tools/webhook-receiver.js",
     "user:create": "nest build && node dist/modules/identity/presentation/cli/create-user.cli.js"
   },
   "dependencies": {

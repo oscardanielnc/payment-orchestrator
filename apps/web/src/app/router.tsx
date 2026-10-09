@@ -49,6 +49,12 @@ export const routes: RouteObject[] = [
               Component: (await import('../features/api-keys/ApiKeysPage')).ApiKeysPage,
             }),
           },
+          {
+            path: 'webhooks',
+            lazy: async () => ({
+              Component: (await import('../features/webhooks/WebhooksPage')).WebhooksPage,
+            }),
+          },
           { path: '*', element: <Navigate to="/charges" replace /> },
         ],
       },

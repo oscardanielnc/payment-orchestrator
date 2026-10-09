@@ -30,6 +30,20 @@ import { BullMqJobQueue } from './bullmq-job-queue';
       { name: QUEUES.domainEvents },
       { name: QUEUES.deadLetter },
     ),
+    // Merchant endpoints can be down for a while: longer backoff than internal jobs
+    // (defaults 8 attempts from 30 s: 30 s, 1, 2, 4, 8, 16, 32 min ≈ 1 h of retries).
+    BullModule.registerQueueAsync({
+      name: QUEUES.webhookDeliveries,
+      inject: [AppConfig],
+      useFactory: (config: AppConfig) => ({
+        defaultJobOptions: {
+          attempts: config.webhooks.maxAttempts,
+          backoff: { type: 'exponential', delay: config.webhooks.backoffMs },
+          removeOnComplete: 1000,
+          removeOnFail: 1000,
+        },
+      }),
+    }),
   ],
   providers: [{ provide: JobQueue, useClass: BullMqJobQueue }],
   exports: [JobQueue, BullModule],

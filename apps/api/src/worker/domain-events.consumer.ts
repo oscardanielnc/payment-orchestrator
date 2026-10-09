@@ -1,19 +1,21 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
+import { FanOutEventUseCase } from '../modules/notifications/application/use-cases/fan-out-event.use-case';
+import type { PublishedEvent } from '../modules/notifications/domain/webhook-event';
 import { QUEUES } from '../shared/application/ports/job-queue';
 
 /**
- * Receives every domain event relayed from the outbox (`charge.succeeded`...). No subscriber
- * yet: outbound merchant webhooks (feature 14) will be the first. Completing the job keeps
- * the queue empty in the meantime.
+ * Every domain event relayed from the outbox. Today one subscriber: outbound merchant
+ * webhooks (feature 14). Re-delivery of the same event is safe: deliveries are unique per
+ * (endpoint, event).
  */
 @Processor(QUEUES.domainEvents)
 export class DomainEventsConsumer extends WorkerHost {
-  private readonly logger = new Logger(DomainEventsConsumer.name);
+  constructor(private readonly fanOut: FanOutEventUseCase) {
+    super();
+  }
 
-  process(job: Job<{ type: string; aggregateId: string }>): Promise<void> {
-    this.logger.debug(`${job.data.type} for ${job.data.aggregateId}`);
-    return Promise.resolve();
+  async process(job: Job<PublishedEvent>): Promise<void> {
+    await this.fanOut.execute(job.data);
   }
 }

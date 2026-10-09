@@ -33,6 +33,7 @@ Rules the linter cannot enforce.
 | `pnpm --filter @po/api tron:payer …`                                 | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
 | `pnpm --filter @po/api demo:tron [units]`                            | Whole USDT flow on Nile in one command (needs a funded payer)        |
 | `pnpm --filter @po/api stripe:pay <pi> [visa\|declined\|cancel]`     | Plays the card customer in Stripe test mode                          |
+| `pnpm --filter @po/api webhook:receiver <whsec_…> [--fail N]`        | Local merchant endpoint that verifies signatures (port 4000)         |
 | `pnpm --filter @po/ui storybook`                                     | Design system in Storybook on http://localhost:6006                  |
 
 ## Testing
@@ -81,6 +82,8 @@ Rules the linter cannot enforce.
 - Enqueue after the transaction commits, never inside it (the job may run before the row is visible)
 - Every job has a deterministic `jobId` (no `:`); handlers are idempotent because delivery is at-least-once
 - Consumers (`@Processor`) are registered only in the worker; the API only produces
+- Outbound webhooks go to `webhook-deliveries`, never sent from the relay or a request; new merchant-facing
+  events are added to `SUBSCRIBABLE_EVENTS`
 - New inbound providers add a `WebhookVerifier` to `WEBHOOK_VERIFIERS` and an `InboundEventHandler` to the
   handlers their module exports
 

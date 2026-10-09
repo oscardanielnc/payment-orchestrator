@@ -4,6 +4,8 @@ export const QUEUES = {
   inboundEvents: 'inbound-events',
   /** Domain events relayed from the outbox. */
   domainEvents: 'domain-events',
+  /** Outbound merchant webhooks: one job per delivery, with its own longer backoff. */
+  webhookDeliveries: 'webhook-deliveries',
   /** Jobs that exhausted their retries, kept for inspection and manual replay. */
   deadLetter: 'dead-letter',
 } as const;

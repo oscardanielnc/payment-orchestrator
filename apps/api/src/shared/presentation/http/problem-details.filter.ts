@@ -42,6 +42,10 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
   'user.email_taken': HttpStatus.CONFLICT,
   'user.invalid_email': HttpStatus.BAD_REQUEST,
   'user.weak_password': HttpStatus.BAD_REQUEST,
+  'webhook_endpoint.invalid_url': HttpStatus.BAD_REQUEST,
+  'webhook_endpoint.not_found': HttpStatus.NOT_FOUND,
+  'webhook_delivery.not_found': HttpStatus.NOT_FOUND,
+  'webhook_delivery.invalid_cursor': HttpStatus.BAD_REQUEST,
 };
 
 const TITLES: Record<number, string> = {
