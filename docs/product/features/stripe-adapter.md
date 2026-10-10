@@ -13,6 +13,7 @@ First card provider, and the reference adapter for the `PaymentProvider` port.
 - The charge id travels in the PaymentIntent metadata; creation sends an idempotency key
 - Handled events: `payment_intent.succeeded` (paid), `payment_intent.payment_failed` (decline recorded, charge stays open: [ADR 0016](../../adr/0016-card-declines-keep-charges-open.md)), `payment_intent.canceled` (failed)
 - Webhook signature verified via `Stripe-Signature` with the endpoint secret
+- A webhook that never arrives is covered by a status check after 2 minutes ([ADR 0019](../../adr/0019-status-check-for-missed-webhooks.md))
 - Every outbound HTTP call has a timeout
 - Local testing with the Stripe CLI (`stripe listen`, `stripe trigger`)
 
@@ -26,7 +27,7 @@ First card provider, and the reference adapter for the `PaymentProvider` port.
 
 - `payments/infrastructure/providers/stripe/`: `StripeCardProvider` (card-only intents, no redirects, attempt id as idempotency key)
 - `inbound/infrastructure/signatures/stripe-webhook.verifier.ts`: official SDK `constructEvent`
-- `StripeEventHandler` → `SettleProviderPaymentUseCase` (provider-agnostic) → ledger `Dr platform:stripe:receivable / Cr merchant:available`
+- `StripeEventHandler` and the worker's `ProviderPaymentSyncService` (via `SyncProviderPaymentsUseCase` + `fetchOutcome`) → `SettleProviderPaymentUseCase` (provider-agnostic) → ledger `Dr platform:stripe:receivable / Cr merchant:available`
 - Enabled only when `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set; dev tool `stripe:pay <pi> [visa|declined|cancel]`
 - Runbook: [test a card payment](../../runbooks/test-a-card-payment-with-stripe.md)
 

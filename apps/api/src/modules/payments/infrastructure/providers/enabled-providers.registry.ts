@@ -21,4 +21,8 @@ export class EnabledProvidersRegistry extends PaymentProviderRegistry {
   find(id: ProviderId): PaymentProvider | undefined {
     return this.byId.get(id);
   }
+
+  all(): readonly PaymentProvider[] {
+    return [...this.byId.values()];
+  }
 }

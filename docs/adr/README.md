@@ -23,3 +23,4 @@ Template: [template.md](template.md).
 | [0016](0016-card-declines-keep-charges-open.md)    | A card decline does not close the charge                                      | Accepted |
 | [0017](0017-payment-links-and-public-checkout.md)  | Payment links: a checkout token per charge and a public checkout API          | Accepted |
 | [0018](0018-outbound-webhooks.md)                  | Outbound webhooks: per-endpoint deliveries, encrypted secrets, signed retries | Accepted |
+| [0019](0019-status-check-for-missed-webhooks.md)   | Status checks as a safety net for missed provider webhooks                    | Accepted |

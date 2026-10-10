@@ -3,7 +3,9 @@ import type {
   ProviderPayment,
   ProviderPaymentRequest,
 } from '../../../application/ports/payment-provider';
+import { Money } from '../../../../../shared/domain/money';
 import type { ProviderId } from '../../../domain/payment-route';
+import type { ProviderOutcome } from '../../../domain/provider-outcome';
 import type { StripePaymentIntentsApi } from './stripe-client';
 
 /**
@@ -39,5 +41,21 @@ export class StripeCardProvider implements PaymentProvider {
       externalReference: intent.id,
       instructions: { type: 'card_client_secret', clientSecret: intent.client_secret },
     };
+  }
+
+  /** Only final states: a decline leaves the intent open for the customer to retry. */
+  async fetchOutcome(externalReference: string): Promise<ProviderOutcome | null> {
+    const intent = await this.stripe.paymentIntents.retrieve(externalReference);
+    switch (intent.status) {
+      case 'succeeded':
+        return {
+          kind: 'succeeded',
+          amount: Money.of(BigInt(intent.amount_received), intent.currency.toUpperCase()),
+        };
+      case 'canceled':
+        return { kind: 'canceled' };
+      default:
+        return null;
+    }
   }
 }

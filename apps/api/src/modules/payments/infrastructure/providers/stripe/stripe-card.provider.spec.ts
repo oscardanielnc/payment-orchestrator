@@ -13,7 +13,7 @@ const request = {
 describe('StripeCardProvider', () => {
   it('creates a card-only PaymentIntent with our ids in metadata and the attempt as idempotency key', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'pi_123', client_secret: 'fake-client-secret' });
-    const provider = new StripeCardProvider({ paymentIntents: { create } });
+    const provider = new StripeCardProvider({ paymentIntents: { create, retrieve: vi.fn() } });
 
     const payment = await provider.createPayment(request);
 
@@ -33,10 +33,30 @@ describe('StripeCardProvider', () => {
   });
 
   it('refuses amounts a JavaScript number cannot hold exactly', async () => {
-    const provider = new StripeCardProvider({ paymentIntents: { create: vi.fn() } });
+    const provider = new StripeCardProvider({
+      paymentIntents: { create: vi.fn(), retrieve: vi.fn() },
+    });
 
     await expect(
       provider.createPayment({ ...request, amount: Money.of(2n ** 60n, 'USD') }),
     ).rejects.toThrow('too large');
   });
+
+  it.each([
+    ['succeeded', { kind: 'succeeded', amount: Money.of(2500n, 'USD') }],
+    ['canceled', { kind: 'canceled' }],
+    ['requires_payment_method', null],
+    ['processing', null],
+  ] as const)(
+    'maps a %s intent to its final outcome, or null while open',
+    async (status, outcome) => {
+      const retrieve = vi
+        .fn()
+        .mockResolvedValue({ id: 'pi_123', status, amount_received: 2500, currency: 'usd' });
+      const provider = new StripeCardProvider({ paymentIntents: { create: vi.fn(), retrieve } });
+
+      expect(await provider.fetchOutcome('pi_123')).toEqual(outcome);
+      expect(retrieve).toHaveBeenCalledWith('pi_123');
+    },
+  );
 });
