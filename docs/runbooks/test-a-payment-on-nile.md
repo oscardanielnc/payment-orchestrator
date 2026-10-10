@@ -5,7 +5,7 @@ Testnet only. Nothing here moves real money.
 ## Once: wallets
 
 ```sh
-pnpm --filter @po/api crypto:xpub        # deposit wallet: put TRON_DEPOSIT_XPUB in .env, keep the mnemonic private
+pnpm --filter @po/api crypto:xpub tron   # deposit wallet: writes TRON_DEPOSIT_XPUB to .env, mnemonic to the private file
 pnpm --filter @po/api tron:payer new     # customer wallet: put TRON_TEST_PAYER_PRIVATE_KEY in .env
 ```
 

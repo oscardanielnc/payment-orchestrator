@@ -10,6 +10,8 @@ export const TRON_TESTNET_HOSTS = ['https://nile.trongrid.io'];
 /** USDT test token on Nile (faucet: nileex.io). */
 export const TRON_TESTNET_USDT_CONTRACTS = ['TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf'];
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
+/** Circle's test USDC on Base Sepolia (faucet: faucet.circle.com). */
+export const BASE_SEPOLIA_USDC_CONTRACTS = ['0x036CbD53842c5426634e7929541eC2318f3dCF7e'];
 
 const STRIPE_TEST_KEY = /^(sk|rk)_test_/;
 const STRIPE_TEST_PUBLISHABLE_KEY = /^pk_test_/;
@@ -97,6 +99,18 @@ export function checkPaymentsPolicy(env: Env): PolicyViolation[] {
         reason: `must be ${BASE_SEPOLIA_CHAIN_ID} (Base Sepolia)`,
       });
     }
+  }
+
+  if (
+    env.BASE_USDC_CONTRACT !== undefined &&
+    !BASE_SEPOLIA_USDC_CONTRACTS.some(
+      (c) => c.toLowerCase() === env.BASE_USDC_CONTRACT?.toLowerCase(),
+    )
+  ) {
+    violations.push({
+      variable: 'BASE_USDC_CONTRACT',
+      reason: `must be the Base Sepolia test USDC contract: ${BASE_SEPOLIA_USDC_CONTRACTS.join(', ')}`,
+    });
   }
 
   return violations;

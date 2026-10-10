@@ -19,6 +19,7 @@ const source = new TronGridTransferSource({
   fullHost: 'https://nile.trongrid.io',
   usdtContract: 'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
   apiKey: undefined,
+  pollIntervalMs: 10_000,
   now: () => 1_790_900_000_000,
 });
 

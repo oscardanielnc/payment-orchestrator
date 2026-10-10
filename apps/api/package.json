@@ -19,6 +19,7 @@
     "crypto:xpub": "nest build && node dist/tools/generate-deposit-xpub.js",
     "tron:payer": "nest build && node dist/tools/tron-test-payer.js",
     "demo:tron": "nest build && node dist/tools/demo-tron-payment.js",
+    "base:payer": "nest build && node dist/tools/base-test-payer.js",
     "stripe:pay": "nest build && node dist/tools/stripe-pay.js",
     "webhook:receiver": "nest build && node dist/tools/webhook-receiver.js",
     "user:create": "nest build && node dist/modules/identity/presentation/cli/create-user.cli.js"
@@ -50,6 +51,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "stripe": "^23.0.0",
+    "viem": "^2.56.9",
     "zod": "^4.6.5"
   },
   "devDependencies": {

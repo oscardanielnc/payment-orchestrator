@@ -65,6 +65,13 @@ export const envSchema = z.object({
   BASE_SEPOLIA_RPC_URL: optional(z.url({ protocol: /^https$/, error: 'must be an https URL' })),
   BASE_SEPOLIA_CHAIN_ID: optional(z.coerce.number().int()),
   BASE_USDC_CONTRACT: optional(evmAddress),
+  /** Account-level extended PUBLIC key (m/44'/60'/0'): derives one deposit address per attempt. */
+  BASE_DEPOSIT_XPUB: optional(
+    z.string().regex(/^xpub[1-9A-HJ-NP-Za-km-z]{107}$/, 'must be an xpub'),
+  ),
+  /** Blocks on top of a transfer before it counts as paid (ADR 0020). */
+  BASE_CONFIRMATIONS: z.coerce.number().int().min(1).max(1000).default(12),
+  BASE_POLL_INTERVAL_MS: z.coerce.number().int().min(1000).default(10_000),
 });
 
 export type Env = z.infer<typeof envSchema>;

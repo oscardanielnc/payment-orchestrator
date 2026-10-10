@@ -16,7 +16,7 @@ Each payment attempt needs a unique address. The server must not be able to spen
 - Watchers poll on an interval with a persisted cursor:
   - TRON: TronGrid contract events, `only_confirmed=true` (solidified, irreversible). The cursor is the newest
     block timestamp read; each poll re-reads one minute before it in case the indexer was late
-  - EVM: viem `getLogs` for `Transfer` of the USDC contract, up to `head - confirmations`
+  - EVM: viem `getLogs` for `Transfer` of the USDC contract, up to `head - confirmations` (details in ADR 0020)
 - `(network, txHash, eventIndex)` is unique: re-reading is harmless
 - Each transfer is applied in its own transaction (record, credit deposit, settle attempt and charge).
   Until feature 6 adds queues, the worker calls the use case directly; network I/O stays outside transactions

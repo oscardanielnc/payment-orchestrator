@@ -24,3 +24,4 @@ Template: [template.md](template.md).
 | [0017](0017-payment-links-and-public-checkout.md)  | Payment links: a checkout token per charge and a public checkout API          | Accepted |
 | [0018](0018-outbound-webhooks.md)                  | Outbound webhooks: per-endpoint deliveries, encrypted secrets, signed retries | Accepted |
 | [0019](0019-status-check-for-missed-webhooks.md)   | Status checks as a safety net for missed provider webhooks                    | Accepted |
+| [0020](0020-base-confirmations-and-evm-watcher.md) | Base Sepolia: 12 confirmations and a block-cursor log watcher                 | Accepted |
