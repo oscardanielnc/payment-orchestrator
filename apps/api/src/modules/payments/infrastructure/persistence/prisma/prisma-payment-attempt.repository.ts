@@ -83,6 +83,25 @@ export class PrismaPaymentAttemptRepository extends PaymentAttemptRepository {
     return row ? toDomain(row) : null;
   }
 
+  async findPendingToSync(query: {
+    providers: readonly string[];
+    createdAfter: Date;
+    updatedBefore: Date;
+    limit: number;
+  }): Promise<PaymentAttempt[]> {
+    const rows = await this.txHost.tx.paymentAttempt.findMany({
+      where: {
+        status: 'pending',
+        provider: { in: [...query.providers] },
+        createdAt: { gt: query.createdAfter },
+        updatedAt: { lt: query.updatedBefore },
+      },
+      orderBy: { updatedAt: 'asc' },
+      take: query.limit,
+    });
+    return rows.map(toDomain);
+  }
+
   async listForCharge(organizationId: string, chargeId: string): Promise<PaymentAttempt[]> {
     const rows = await this.txHost.tx.paymentAttempt.findMany({
       where: { organizationId, chargeId },

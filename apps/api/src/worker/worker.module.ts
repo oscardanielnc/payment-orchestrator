@@ -8,9 +8,10 @@ import { QueueModule } from '../shared/infrastructure/queue/queue.module';
 import { SharedModule } from '../shared/shared.module';
 import { ChainWatcherService } from './chain-watcher.service';
 import { ChargeExpiryService } from './charge-expiry.service';
+import { ProviderPaymentSyncService } from './provider-payment-sync.service';
 import { QueueConsumersModule } from './queue-consumers.module';
 
-/** Background work (ADR 0003): chain watchers, queue consumers, outbox relay, expiry sweep. No HTTP. */
+/** Background work (ADR 0003): chain watchers, queue consumers, outbox relay, sweeps. No HTTP. */
 @Module({})
 export class WorkerModule {
   static register(config: AppConfig): DynamicModule {
@@ -25,7 +26,7 @@ export class WorkerModule {
         PaymentsModule,
         QueueConsumersModule,
       ],
-      providers: [ChainWatcherService, ChargeExpiryService],
+      providers: [ChainWatcherService, ChargeExpiryService, ProviderPaymentSyncService],
     };
   }
 }

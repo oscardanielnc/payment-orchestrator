@@ -7,6 +7,9 @@ export interface StripePaymentIntentsApi {
       params: Stripe.PaymentIntentCreateParams,
       options: Stripe.RequestOptions,
     ): Promise<Pick<Stripe.PaymentIntent, 'id' | 'client_secret'>>;
+    retrieve(
+      id: string,
+    ): Promise<Pick<Stripe.PaymentIntent, 'id' | 'status' | 'amount_received' | 'currency'>>;
   };
 }
 

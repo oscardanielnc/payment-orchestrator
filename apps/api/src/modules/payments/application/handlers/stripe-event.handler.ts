@@ -2,10 +2,8 @@ import { Logger } from '@nestjs/common';
 import { Money } from '../../../../shared/domain/money';
 import { InboundEventHandler } from '../../../inbound/application/ports/inbound-ports';
 import type { InboundEvent } from '../../../inbound/domain/inbound-event';
-import type {
-  ProviderOutcome,
-  SettleProviderPaymentUseCase,
-} from '../use-cases/settle-provider-payment.use-case';
+import type { ProviderOutcome } from '../../domain/provider-outcome';
+import type { SettleProviderPaymentUseCase } from '../use-cases/settle-provider-payment.use-case';
 
 /** The fields we read from a Stripe event (the signature was already verified on ingestion). */
 interface StripeEvent {

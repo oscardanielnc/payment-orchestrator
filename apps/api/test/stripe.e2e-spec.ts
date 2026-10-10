@@ -5,6 +5,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CreateOrganizationUseCase } from '../src/modules/identity/application/use-cases/create-organization.use-case';
+import { SyncProviderPaymentsUseCase } from '../src/modules/payments/application/use-cases/sync-provider-payments.use-case';
 import { STRIPE_CLIENT } from '../src/modules/payments/infrastructure/providers/stripe/stripe-client';
 import { PrismaService } from '../src/shared/infrastructure/prisma/prisma.service';
 import { createTestApp, eventually } from './setup/create-test-app';
@@ -21,7 +22,13 @@ const fakeStripe = {
       const id = `pi_test_${fakeStripe.created.length}_${Date.now()}`;
       return Promise.resolve({ id, client_secret: `${id}_secret_test` });
     },
+    retrieve(id: string) {
+      const status = fakeStripe.statuses.get(id) ?? 'requires_payment_method';
+      return Promise.resolve({ id, status, amount_received: 2500, currency: 'usd' });
+    },
   },
+  /** What Stripe would answer for an intent whose webhook never reached us. */
+  statuses: new Map<string, Stripe.PaymentIntent.Status>(),
 };
 
 describe('Stripe card payments (fake Stripe API, real webhooks signature, Postgres, Redis)', () => {
@@ -195,6 +202,26 @@ describe('Stripe card payments (fake Stripe API, real webhooks signature, Postgr
     expect(await chargeStatus(charge.id)).toBe('processing');
   });
 
+  it('settles a payment whose webhook never arrived by asking Stripe', async () => {
+    const { charge, attempt, intentId } = await openCardAttempt();
+    fakeStripe.statuses.set(intentId, 'succeeded');
+    // Pretend the webhook has been silent for 3 minutes.
+    await prisma.paymentAttempt.update({
+      where: { id: attempt.id },
+      data: { updatedAt: new Date(Date.now() - 3 * 60_000) },
+    });
+
+    await app.get(SyncProviderPaymentsUseCase).execute();
+
+    expect(await chargeStatus(charge.id)).toBe('succeeded');
+    // The late webhook changes nothing: the payment is posted once.
+    await settled(
+      (await deliver('payment_intent.succeeded', intentId, { amount_received: 2500 })).id,
+    );
+    const { data } = (await get(`/v1/charges/${charge.id}/ledger-entries`)).body as LedgerEntryList;
+    expect(data).toHaveLength(2);
+  });
+
   it('ignores PaymentIntents it did not create', async () => {
     const event = await settled(
       (await deliver('payment_intent.succeeded', 'pi_from_dashboard', { amount_received: 1 })).id,
@@ -223,7 +250,7 @@ describe('Stripe card payments (fake Stripe API, real webhooks signature, Postgr
   it('exposes the merchant balance built from card payments', async () => {
     const balances = (await get('/v1/balances')).body as BalanceList;
     expect(balances.data.find((b) => b.name === 'Available' && b.currency === 'USD')?.posted).toBe(
-      '7500',
+      '10000',
     );
   });
 });

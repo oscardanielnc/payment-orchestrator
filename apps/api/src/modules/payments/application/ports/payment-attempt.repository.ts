@@ -9,6 +9,16 @@ export abstract class PaymentAttemptRepository {
     provider: string,
     externalReference: string,
   ): Promise<PaymentAttempt | null>;
+  /**
+   * Pending attempts of these providers created after `createdAfter` and untouched since
+   * `updatedBefore`: candidates for a status check. Least recently updated first.
+   */
+  abstract findPendingToSync(query: {
+    providers: readonly string[];
+    createdAfter: Date;
+    updatedBefore: Date;
+    limit: number;
+  }): Promise<PaymentAttempt[]>;
   /** Oldest first. */
   abstract listForCharge(organizationId: string, chargeId: string): Promise<PaymentAttempt[]>;
 }

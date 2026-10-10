@@ -17,6 +17,7 @@ import { IngestChainTransfersUseCase } from './application/use-cases/ingest-chai
 import { SettleChainTransferUseCase } from './application/use-cases/settle-chain-transfer.use-case';
 import { SettleProviderPaymentUseCase } from './application/use-cases/settle-provider-payment.use-case';
 import { StartPaymentAttemptUseCase } from './application/use-cases/start-payment-attempt.use-case';
+import { SyncProviderPaymentsUseCase } from './application/use-cases/sync-provider-payments.use-case';
 import { CryptoDepositProvider } from './infrastructure/providers/crypto-deposit.provider';
 import { StripeCardProvider } from './infrastructure/providers/stripe/stripe-card.provider';
 import {
@@ -67,6 +68,7 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
     IngestChainTransfersUseCase,
     SettleChainTransferUseCase,
     SettleProviderPaymentUseCase,
+    SyncProviderPaymentsUseCase,
     // Handlers for inbound events this module understands; the worker plugs them into the queue.
     {
       provide: PAYMENT_INBOUND_HANDLERS,
@@ -86,6 +88,7 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
     ListPaymentAttemptsUseCase,
     ListAvailableMethodsUseCase,
     IngestChainTransfersUseCase,
+    SyncProviderPaymentsUseCase,
     PAYMENT_INBOUND_HANDLERS,
   ],
 })

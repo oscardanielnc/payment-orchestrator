@@ -1,19 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Clock } from '../../../../shared/application/ports/clock';
 import { TransactionRunner } from '../../../../shared/application/ports/transaction-runner';
-import type { Money } from '../../../../shared/domain/money';
 import { ChargePaymentsService } from '../../../charges/application/services/charge-payments.service';
 import { LedgerService } from '../../../ledger/application/services/ledger.service';
 import { ProviderAmountMismatchError } from '../../domain/errors';
+import type { ProviderOutcome } from '../../domain/provider-outcome';
 import { PaymentAttemptRepository } from '../ports/payment-attempt.repository';
 import { providerPaymentCaptured } from '../services/payment-postings';
-
-export type ProviderOutcome =
-  | { kind: 'succeeded'; amount: Money }
-  /** One try failed; the customer may retry on the same provider payment. Not terminal. */
-  | { kind: 'declined'; reason: string }
-  /** The provider payment is closed for good. */
-  | { kind: 'canceled' };
 
 export type SettleOutcome = 'unknown' | 'already-settled' | 'paid' | 'late' | 'declined' | 'failed';
 
