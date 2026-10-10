@@ -34,7 +34,7 @@ describe('loadConfig', () => {
 
     expect(config.paymentsMode).toBe('test');
     expect(config.apiPort).toBe(3000);
-    expect(config.base?.chainId).toBe(84532);
+    expect(config.base).toBeUndefined();
   });
 
   it('treats empty values from .env.example as not configured', () => {
@@ -94,6 +94,24 @@ describe('loadConfig', () => {
 
   it('enables TRON only when host, contract and deposit xpub are all set', () => {
     expect(loadConfig(validEnv).tron).toBeUndefined();
+  });
+
+  it('enables Base only with RPC, chain id, USDC contract and deposit xpub', () => {
+    const config = loadConfig({
+      ...validEnv,
+      BASE_USDC_CONTRACT: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+      BASE_DEPOSIT_XPUB: `xpub${'1'.repeat(107)}`, // gitleaks:allow (shape only, not a key)
+    });
+    expect(config.base).toMatchObject({ chainId: 84532, confirmations: 12 });
+  });
+
+  it('rejects a Base USDC contract other than the Sepolia test token', () => {
+    expect(
+      problemsFor({
+        ...validEnv,
+        BASE_USDC_CONTRACT: '0x1111111111111111111111111111111111111111',
+      }),
+    ).toEqual([expect.stringContaining('BASE_USDC_CONTRACT')]);
   });
 
   it('keeps Mercado Pago disabled until its rule exists', () => {

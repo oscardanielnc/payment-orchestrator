@@ -29,6 +29,7 @@ const XPUB = HDKey.fromMasterSeed(mnemonicToSeedSync(TEST_MNEMONIC)).derive(
 /** Stands in for TronGrid: the test decides which confirmed transfers "exist". */
 class ScriptedTransferSource extends TransferSource {
   readonly network: CryptoNetwork = 'tron-nile';
+  readonly pollIntervalMs = 10_000;
   transfers: ChainTransfer[] = [];
 
   fetchConfirmedSince(): Promise<TransferBatch> {

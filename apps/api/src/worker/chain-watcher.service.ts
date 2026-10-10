@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
-import { AppConfig } from '../config/app-config';
 import { CryptoNetworks } from '../modules/crypto/application/ports/crypto-networks';
 import type { CryptoNetwork } from '../modules/crypto/domain/network';
 import { IngestChainTransfersUseCase } from '../modules/payments/application/use-cases/ingest-chain-transfers.use-case';
@@ -17,7 +16,6 @@ export class ChainWatcherService implements OnApplicationBootstrap, OnApplicatio
   constructor(
     private readonly networks: CryptoNetworks,
     private readonly ingest: IngestChainTransfersUseCase,
-    private readonly config: AppConfig,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -52,7 +50,7 @@ export class ChainWatcherService implements OnApplicationBootstrap, OnApplicatio
     } catch (error) {
       this.logger.error(`${network} tick failed; retrying next interval`, error as Error);
     } finally {
-      this.schedule(network, this.config.tron?.pollIntervalMs ?? 10_000);
+      this.schedule(network, this.networks.source(network).pollIntervalMs);
     }
   }
 }

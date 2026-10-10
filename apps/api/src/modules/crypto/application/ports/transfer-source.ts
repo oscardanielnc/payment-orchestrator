@@ -10,5 +10,7 @@ export interface TransferBatch {
 /** Reads confirmed (final) transfers of the watched token from a chain (ADR 0010). */
 export abstract class TransferSource {
   abstract readonly network: CryptoNetwork;
+  /** How often the worker polls this network. */
+  abstract readonly pollIntervalMs: number;
   abstract fetchConfirmedSince(cursor: string | null): Promise<TransferBatch>;
 }

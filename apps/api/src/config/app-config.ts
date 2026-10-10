@@ -39,7 +39,10 @@ export interface WebhooksConfig {
 export interface BaseConfig {
   rpcUrl: string;
   chainId: number;
-  usdcContract: string | undefined;
+  usdcContract: string;
+  depositXpub: string;
+  confirmations: number;
+  pollIntervalMs: number;
 }
 
 /**
@@ -86,11 +89,18 @@ export class AppConfig {
             pollIntervalMs: env.TRON_POLL_INTERVAL_MS,
           }
         : undefined,
-      env.BASE_SEPOLIA_RPC_URL && env.BASE_SEPOLIA_CHAIN_ID
+      // Base is enabled only when RPC, chain id, token contract and deposit xpub are all configured.
+      env.BASE_SEPOLIA_RPC_URL &&
+        env.BASE_SEPOLIA_CHAIN_ID &&
+        env.BASE_USDC_CONTRACT &&
+        env.BASE_DEPOSIT_XPUB
         ? {
             rpcUrl: env.BASE_SEPOLIA_RPC_URL,
             chainId: env.BASE_SEPOLIA_CHAIN_ID,
             usdcContract: env.BASE_USDC_CONTRACT,
+            depositXpub: env.BASE_DEPOSIT_XPUB,
+            confirmations: env.BASE_CONFIRMATIONS,
+            pollIntervalMs: env.BASE_POLL_INTERVAL_MS,
           }
         : undefined,
       {

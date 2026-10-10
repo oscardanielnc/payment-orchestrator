@@ -58,6 +58,9 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
         stripe: StripePaymentIntentsApi | null,
       ) => [
         ...(config.tron ? [new CryptoDepositProvider('tron', 'tron-nile', 'USDT', deposits)] : []),
+        ...(config.base
+          ? [new CryptoDepositProvider('base', 'base-sepolia', 'USDC', deposits)]
+          : []),
         ...(stripe ? [new StripeCardProvider(stripe)] : []),
       ],
     },
@@ -79,6 +82,7 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
         settleProvider: SettleProviderPaymentUseCase,
       ) => [
         ...(config.tron ? [new ChainTransferHandler('tron-nile', settleChain)] : []),
+        ...(config.base ? [new ChainTransferHandler('base-sepolia', settleChain)] : []),
         ...(config.stripe ? [new StripeEventHandler(settleProvider)] : []),
       ],
     },

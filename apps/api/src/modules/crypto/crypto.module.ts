@@ -9,6 +9,9 @@ import {
 import { ChainTransfersService } from './application/services/chain-transfers.service';
 import { DepositAddressesService } from './application/services/deposit-addresses.service';
 import { ConfiguredCryptoNetworks } from './infrastructure/configured-crypto-networks';
+import { viemChainReader } from './infrastructure/evm/evm-chain-reader';
+import { EvmTransferSource } from './infrastructure/evm/evm-transfer-source';
+import { EvmXpubAddressDeriver } from './infrastructure/evm/evm-xpub-address-deriver';
 import {
   PrismaChainTransferRepository,
   PrismaDepositAddressRepository,
@@ -35,6 +38,19 @@ import { TronXpubAddressDeriver } from './infrastructure/tron/tron-xpub-address-
                 fullHost: config.tron.fullHost,
                 usdtContract: config.tron.usdtContract,
                 apiKey: config.tron.apiKey,
+                pollIntervalMs: config.tron.pollIntervalMs,
+              }),
+            },
+          }),
+          ...(config.base && {
+            'base-sepolia': {
+              deriver: new EvmXpubAddressDeriver('base-sepolia', config.base.depositXpub),
+              source: new EvmTransferSource('base-sepolia', {
+                reader: viemChainReader(config.base.rpcUrl),
+                token: config.base.usdcContract,
+                expectedChainId: config.base.chainId,
+                confirmations: config.base.confirmations,
+                pollIntervalMs: config.base.pollIntervalMs,
               }),
             },
           }),

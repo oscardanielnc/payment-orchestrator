@@ -29,8 +29,9 @@ Rules the linter cannot enforce.
 | `pnpm --filter @po/api org:create "<name>"`                          | Creates an organization and prints its first API key                 |
 | `pnpm --filter @po/api user:create <org id> <email> [owner\|member]` | Creates a dashboard user and prints a generated password once        |
 | `pnpm --filter @po/api dev:worker`                                   | Runs the worker (chain watchers) in watch mode                       |
-| `pnpm --filter @po/api crypto:xpub`                                  | Creates a testnet deposit wallet and prints its xpub                 |
+| `pnpm --filter @po/api crypto:xpub [tron\|base]`                     | Testnet deposit wallet: xpub to `.env`, mnemonic to the private file |
 | `pnpm --filter @po/api tron:payer …`                                 | Testnet customer wallet: `new`, `balance`, `pay <addr> <units>`      |
+| `pnpm --filter @po/api base:payer …`                                 | Base Sepolia customer wallet: `new`, `balance`, `pay <addr> <units>` |
 | `pnpm --filter @po/api demo:tron [units]`                            | Whole USDT flow on Nile in one command (needs a funded payer)        |
 | `pnpm --filter @po/api stripe:pay <pi> [visa\|declined\|cancel]`     | Plays the card customer in Stripe test mode                          |
 | `pnpm --filter @po/api webhook:receiver <whsec_…> [--fail N]`        | Local merchant endpoint that verifies signatures (port 4000)         |

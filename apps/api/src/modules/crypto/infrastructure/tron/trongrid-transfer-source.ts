@@ -38,10 +38,15 @@ export class TronGridTransferSource extends TransferSource {
       fullHost: string;
       usdtContract: string;
       apiKey: string | undefined;
+      pollIntervalMs: number;
       now?: () => number;
     },
   ) {
     super();
+  }
+
+  get pollIntervalMs(): number {
+    return this.options.pollIntervalMs;
   }
 
   async fetchConfirmedSince(cursor: string | null): Promise<TransferBatch> {
