@@ -5,6 +5,8 @@ export interface TransferBatch {
   transfers: ChainTransfer[];
   /** Where to resume next time. Re-reading a little is fine: transfers are deduplicated. */
   cursor: string;
+  /** True when the source stopped short of the chain head: the worker reads again soon. */
+  behind?: boolean;
 }
 
 /** Reads confirmed (final) transfers of the watched token from a chain (ADR 0010). */

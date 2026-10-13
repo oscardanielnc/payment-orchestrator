@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { TransferBatch, TransferSource } from '../../application/ports/transfer-source';
 import type { ChainTransfer } from '../../domain/chain-transfer';
 import type { CryptoNetwork } from '../../domain/network';
@@ -31,7 +30,6 @@ const OVERLAP_MS = 60 * 1000;
  */
 export class TronGridTransferSource extends TransferSource {
   readonly network: CryptoNetwork = 'tron-nile';
-  private readonly logger = new Logger(TronGridTransferSource.name);
 
   constructor(
     private readonly options: {
@@ -68,9 +66,7 @@ export class TronGridTransferSource extends TransferSource {
           ? `${this.firstPageUrl(since)}&fingerprint=${fingerprint}`
           : null;
     }
-    if (url) this.logger.warn('More events than one poll reads; the next poll continues');
-
-    return { transfers, cursor: String(newest) };
+    return { transfers, cursor: String(newest), behind: url !== null };
   }
 
   private firstPageUrl(sinceMs: number): string {
