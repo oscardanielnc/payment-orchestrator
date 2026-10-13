@@ -97,6 +97,26 @@ export class PrismaDepositAddressRepository extends DepositAddressRepository {
     });
     return row ? toDomain(row) : null;
   }
+
+  async listCreatedBetween(
+    network: CryptoNetwork,
+    from: Date,
+    to: Date,
+  ): Promise<DepositAddress[]> {
+    const rows = await this.txHost.tx.depositAddress.findMany({
+      where: { network, createdAt: { gte: from, lt: to } },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map(toDomain);
+  }
+
+  async listForCharges(network: CryptoNetwork, chargeIds: string[]): Promise<DepositAddress[]> {
+    if (chargeIds.length === 0) return [];
+    const rows = await this.txHost.tx.depositAddress.findMany({
+      where: { network, chargeId: { in: chargeIds } },
+    });
+    return rows.map(toDomain);
+  }
 }
 
 @Injectable()

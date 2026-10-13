@@ -3,6 +3,7 @@ import { Amount } from '@po/ui/data-display/Amount/Amount';
 import { DataTable } from '@po/ui/data-display/DataTable/DataTable';
 import { StatusChip } from '@po/ui/data-display/StatusChip/StatusChip';
 import { EmptyState, ErrorState, Skeleton } from '@po/ui/feedback/States/States';
+import { FilterPills } from '@po/ui/forms/FilterPills/FilterPills';
 import { PageHeader } from '@po/ui/layout/AppShell/AppShell';
 import { Button } from '@po/ui/primitives/Button/Button';
 import { useState } from 'react';
@@ -67,26 +68,12 @@ export function ChargesPage() {
 
       {creating && <NewPaymentLink onClose={() => setCreating(false)} />}
 
-      <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-2">
-        {FILTERS.map((filter) => {
-          const active = filter.value === status;
-          return (
-            <button
-              key={filter.label}
-              type="button"
-              aria-pressed={active}
-              onClick={() => setParams(filter.value ? { status: filter.value } : {})}
-              className={`rounded-full border px-3 py-1 text-sm ${
-                active
-                  ? 'border-accent bg-surface-accent font-semibold text-accent'
-                  : 'border-line bg-surface text-ink hover:bg-bg'
-              }`}
-            >
-              {filter.label}
-            </button>
-          );
-        })}
-      </div>
+      <FilterPills
+        label="Filter by status"
+        options={FILTERS}
+        value={status}
+        onChange={(value) => setParams(value ? { status: value } : {})}
+      />
 
       {charges.isPending ? (
         <Skeleton rows={5} label="Loading charges" />

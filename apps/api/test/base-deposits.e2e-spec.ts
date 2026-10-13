@@ -43,6 +43,11 @@ class ScriptedChain implements EvmChainReader {
   blockTimestamp() {
     return Promise.resolve(new Date());
   }
+  /** Deposits are never swept: the balance is everything ever sent to the address. */
+  tokenBalance(_token: string, address: string) {
+    const received = this.logs.filter((l) => l.to.toLowerCase() === address.toLowerCase());
+    return Promise.resolve(received.reduce((sum, l) => sum + l.value, 0n));
+  }
 }
 
 describe('USDC on Base Sepolia: same domain as TRON, EVM adapters (fake RPC, Postgres, Redis)', () => {

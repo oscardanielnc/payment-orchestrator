@@ -34,6 +34,7 @@ Rules the linter cannot enforce.
 | `pnpm --filter @po/api base:payer …`                                 | Base Sepolia customer wallet: `new`, `balance`, `pay <addr> <units>` |
 | `pnpm --filter @po/api demo:tron [units]`                            | Whole USDT flow on Nile in one command (needs a funded payer)        |
 | `pnpm --filter @po/api stripe:pay <pi> [visa\|declined\|cancel]`     | Plays the card customer in Stripe test mode                          |
+| `pnpm --filter @po/api recon:run [YYYY-MM-DD] [source]`              | Reconciles one UTC day against the ledger and prints a summary       |
 | `pnpm --filter @po/api webhook:receiver <whsec_…> [--fail N]`        | Local merchant endpoint that verifies signatures (port 4000)         |
 | `pnpm --filter @po/ui storybook`                                     | Design system in Storybook on http://localhost:6006                  |
 
@@ -87,6 +88,12 @@ Rules the linter cannot enforce.
   events are added to `SUBSCRIBABLE_EVENTS`
 - New inbound providers add a `WebhookVerifier` to `WEBHOOK_VERIFIERS` and an `InboundEventHandler` to the
   handlers their module exports
+
+## Reconciliation
+
+- A new provider adds a `ReconciliationSource` in `reconciliation.module.ts`; subjects must name a payment
+  the same way on both sides (usually the ledger `externalId` or the charge id)
+- Findings never post to the ledger; corrections are separate, deliberate postings
 
 ## Auth
 

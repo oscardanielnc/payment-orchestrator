@@ -119,6 +119,10 @@ export function chargeSettled(credit: DepositCredit): PostInput {
   };
 }
 
+/** The ledger transaction of a captured provider payment; reconciliation looks it up by this. */
+export const providerPaymentExternalId = (provider: string, externalReference: string) =>
+  `provider-payment:${provider}:${externalReference}`;
+
 /**
  * A card provider captured the payment: it now owes us the money (receivable) and we owe it
  * to the merchant. If the charge had already closed, it waits in `awaiting` for reconciliation.
@@ -133,7 +137,7 @@ export function providerPaymentCaptured(input: {
 }): PostInput {
   const { amount, organizationId: org } = input;
   return {
-    externalId: `provider-payment:${input.provider}:${input.externalReference}`,
+    externalId: providerPaymentExternalId(input.provider, input.externalReference),
     organizationId: org,
     reference: input.chargeId,
     description: `Card payment captured by ${input.provider}`,

@@ -15,6 +15,7 @@ function fakeChain(head: bigint, logs: EvmTransferLog[] = [], chainId = 84532) {
       return Promise.resolve(logs.filter((l) => l.blockNumber >= from && l.blockNumber <= to));
     },
     blockTimestamp: (block) => Promise.resolve(new Date(Number(block) * 2000)),
+    tokenBalance: () => Promise.resolve(0n),
   };
   return { reader, ranges };
 }

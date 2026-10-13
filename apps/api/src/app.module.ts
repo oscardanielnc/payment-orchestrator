@@ -10,6 +10,7 @@ import { InboundModule } from './modules/inbound/inbound.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ReconciliationModule } from './modules/reconciliation/reconciliation.module';
 import { ProblemDetailsFilter } from './shared/presentation/http/problem-details.filter';
 import { QueueModule } from './shared/infrastructure/queue/queue.module';
 import { SharedModule } from './shared/shared.module';
@@ -30,6 +31,7 @@ export class AppModule {
         LedgerModule,
         NotificationsModule,
         InboundModule,
+        ReconciliationModule,
       ],
       controllers: [HealthController],
       providers: [{ provide: APP_FILTER, useClass: ProblemDetailsFilter }],

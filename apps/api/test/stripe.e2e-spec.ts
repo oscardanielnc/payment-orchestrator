@@ -24,7 +24,10 @@ const fakeStripe = {
     },
     retrieve(id: string) {
       const status = fakeStripe.statuses.get(id) ?? 'requires_payment_method';
-      return Promise.resolve({ id, status, amount_received: 2500, currency: 'usd' });
+      return Promise.resolve({ id, status, amount_received: 2500, currency: 'usd', metadata: {} });
+    },
+    list() {
+      return { autoPagingToArray: () => Promise.resolve([]) };
     },
   },
   /** What Stripe would answer for an intent whose webhook never reached us. */

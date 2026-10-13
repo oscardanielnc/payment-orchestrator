@@ -12,6 +12,7 @@ const NAV = [
     items: [
       { label: 'Charges', href: '/charges' },
       { label: 'Balances', href: '/balances' },
+      { label: 'Reconciliation', href: '/reconciliation' },
     ],
   },
   {

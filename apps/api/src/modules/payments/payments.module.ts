@@ -94,6 +94,7 @@ export const PAYMENT_INBOUND_HANDLERS = Symbol('PAYMENT_INBOUND_HANDLERS');
     IngestChainTransfersUseCase,
     SyncProviderPaymentsUseCase,
     PAYMENT_INBOUND_HANDLERS,
+    STRIPE_CLIENT,
   ],
 })
 export class PaymentsModule {}

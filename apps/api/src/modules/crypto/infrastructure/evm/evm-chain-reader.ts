@@ -1,4 +1,4 @@
-import { createPublicClient, http, parseAbiItem } from 'viem';
+import { createPublicClient, erc20Abi, http, parseAbiItem } from 'viem';
 
 /** One ERC-20 `Transfer` log, already decoded. */
 export interface EvmTransferLog {
@@ -18,6 +18,7 @@ export interface EvmChainReader {
   headBlock(): Promise<bigint>;
   transferLogs(token: string, fromBlock: bigint, toBlock: bigint): Promise<EvmTransferLog[]>;
   blockTimestamp(blockNumber: bigint): Promise<Date>;
+  tokenBalance(token: string, address: string): Promise<bigint>;
 }
 
 const TRANSFER = parseAbiItem(
@@ -55,5 +56,12 @@ export function viemChainReader(rpcUrl: string): EvmChainReader {
       const block = await client.getBlock({ blockNumber });
       return new Date(Number(block.timestamp) * 1000);
     },
+    tokenBalance: (token, address) =>
+      client.readContract({
+        address: token as `0x${string}`,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [address as `0x${string}`],
+      }),
   };
 }

@@ -1,6 +1,7 @@
 import { TransferBatch, TransferSource } from '../../application/ports/transfer-source';
 import type { ChainTransfer } from '../../domain/chain-transfer';
 import type { CryptoNetwork } from '../../domain/network';
+import { tronAddressToHex20 } from './tron-address';
 
 interface TronGridEvent {
   transaction_id: string;
@@ -67,6 +68,30 @@ export class TronGridTransferSource extends TransferSource {
           : null;
     }
     return { transfers, cursor: String(newest), behind: url !== null };
+  }
+
+  /** TRC-20 `balanceOf` as a read-only contract call (no transaction, no fee). */
+  async tokenBalance(address: string): Promise<bigint> {
+    const response = await fetch(`${this.options.fullHost}/wallet/triggerconstantcontract`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.options.apiKey && { 'TRON-PRO-API-KEY': this.options.apiKey }),
+      },
+      body: JSON.stringify({
+        owner_address: address,
+        contract_address: this.options.usdtContract,
+        function_selector: 'balanceOf(address)',
+        parameter: tronAddressToHex20(address).padStart(64, '0'),
+        visible: true,
+      }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`TronGrid answered ${response.status}`);
+    const body = (await response.json()) as { constant_result?: string[] };
+    const result = body.constant_result?.[0];
+    if (!result) throw new Error(`No balance returned for ${address}`);
+    return BigInt(`0x${result}`);
   }
 
   private firstPageUrl(sinceMs: number): string {

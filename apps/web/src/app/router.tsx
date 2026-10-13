@@ -44,6 +44,13 @@ export const routes: RouteObject[] = [
             }),
           },
           {
+            path: 'reconciliation',
+            lazy: async () => ({
+              Component: (await import('../features/reconciliation/ReconciliationPage'))
+                .ReconciliationPage,
+            }),
+          },
+          {
             path: 'api-keys',
             lazy: async () => ({
               Component: (await import('../features/api-keys/ApiKeysPage')).ApiKeysPage,

@@ -30,6 +30,11 @@ const XPUB = HDKey.fromMasterSeed(mnemonicToSeedSync(TEST_MNEMONIC)).derive(
 class ScriptedTransferSource extends TransferSource {
   readonly network: CryptoNetwork = 'tron-nile';
   readonly pollIntervalMs = 10_000;
+  balances = new Map<string, bigint>();
+
+  tokenBalance(address: string): Promise<bigint> {
+    return Promise.resolve(this.balances.get(address) ?? 0n);
+  }
   transfers: ChainTransfer[] = [];
 
   fetchConfirmedSince(): Promise<TransferBatch> {

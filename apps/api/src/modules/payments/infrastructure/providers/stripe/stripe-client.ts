@@ -1,5 +1,10 @@
 import Stripe from 'stripe';
 
+export type StripeIntentSummary = Pick<
+  Stripe.PaymentIntent,
+  'id' | 'status' | 'amount_received' | 'currency' | 'metadata'
+>;
+
 /** The slice of the Stripe SDK this module uses: small enough to fake in tests. */
 export interface StripePaymentIntentsApi {
   paymentIntents: {
@@ -7,9 +12,11 @@ export interface StripePaymentIntentsApi {
       params: Stripe.PaymentIntentCreateParams,
       options: Stripe.RequestOptions,
     ): Promise<Pick<Stripe.PaymentIntent, 'id' | 'client_secret'>>;
-    retrieve(
-      id: string,
-    ): Promise<Pick<Stripe.PaymentIntent, 'id' | 'status' | 'amount_received' | 'currency'>>;
+    retrieve(id: string): Promise<StripeIntentSummary>;
+    /** Reconciliation reads a day of intents; the SDK pages through them. */
+    list(params: Stripe.PaymentIntentListParams): {
+      autoPagingToArray(options: { limit: number }): Promise<StripeIntentSummary[]>;
+    };
   };
 }
 

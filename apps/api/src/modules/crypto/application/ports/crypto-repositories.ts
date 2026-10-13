@@ -9,6 +9,12 @@ export abstract class DepositAddressRepository {
   abstract save(deposit: DepositAddress): Promise<void>;
   abstract findByMatchKeys(network: CryptoNetwork, matchKeys: string[]): Promise<DepositAddress[]>;
   abstract findByMatchKey(network: CryptoNetwork, matchKey: string): Promise<DepositAddress | null>;
+  abstract listCreatedBetween(
+    network: CryptoNetwork,
+    from: Date,
+    to: Date,
+  ): Promise<DepositAddress[]>;
+  abstract listForCharges(network: CryptoNetwork, chargeIds: string[]): Promise<DepositAddress[]>;
 }
 
 export abstract class ChainTransferRepository {

@@ -370,3 +370,55 @@ model WebhookDeliveryAttempt {
   @@index([deliveryId, attemptedAt])
   @@map("webhook_delivery_attempts")
 }
+
+// --- Reconciliation (feature 15, ADR 0021) ---
+
+enum ReconciliationFindingKind {
+  missing_in_ledger
+  missing_at_provider
+  amount_mismatch
+}
+
+enum ReconciliationFindingStatus {
+  open
+  resolved
+  cleared
+}
+
+/// One row per (source, window); running the window again overwrites it.
+model ReconciliationRun {
+  id            String   @id @default(uuid()) @db.Uuid
+  source        String
+  windowStart   DateTime @map("window_start") @db.Timestamptz(3)
+  windowEnd     DateTime @map("window_end") @db.Timestamptz(3)
+  matched       Int
+  discrepancies Int
+  ranAt         DateTime @map("ran_at") @db.Timestamptz(3)
+
+  @@unique([source, windowStart, windowEnd])
+  @@map("reconciliation_runs")
+}
+
+/// A difference between a provider and the ledger. Never changes the ledger.
+model ReconciliationFinding {
+  id             String                      @id @db.Uuid
+  source         String
+  kind           ReconciliationFindingKind
+  subject        String
+  organizationId String?                     @map("organization_id") @db.Uuid
+  chargeId       String?                     @map("charge_id") @db.Uuid
+  currency       String                      @db.VarChar(10)
+  providerAmount Decimal                     @map("provider_amount") @db.Decimal(78, 0)
+  ledgerAmount   Decimal                     @map("ledger_amount") @db.Decimal(78, 0)
+  status         ReconciliationFindingStatus
+  firstSeenAt    DateTime                    @map("first_seen_at") @db.Timestamptz(3)
+  lastSeenAt     DateTime                    @map("last_seen_at") @db.Timestamptz(3)
+  resolvedAt     DateTime?                   @map("resolved_at") @db.Timestamptz(3)
+  resolvedBy     String?                     @map("resolved_by") @db.Uuid
+  note           String?
+  version        Int
+
+  @@unique([source, subject])
+  @@index([organizationId, firstSeenAt])
+  @@map("reconciliation_findings")
+}
