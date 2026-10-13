@@ -1,7 +1,7 @@
 # 13. USDC on Base Sepolia
 
 - Priority: P1
-- Status: In progress (code done and reading the live chain; live payment pending a funded test payer)
+- Status: Done (verified live on Base Sepolia on 2026-10-13: 1 USDC charge paid in 37 s from the test payer wallet)
 
 ## Purpose
 
@@ -16,7 +16,7 @@ Second network behind the same `BlockchainWatcher` port, using viem.
 
 ## Acceptance criteria
 
-- [ ] Test USDC sent on Base Sepolia moves the charge to `succeeded` after confirmations
+- [x] Test USDC sent on Base Sepolia moves the charge to `succeeded` after confirmations
 - [x] Domain and use cases are unchanged versus the TRON feature (the diff touches adapters, config and wiring only)
 
 ## Implementation

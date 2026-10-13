@@ -26,7 +26,7 @@ export class ChainTransfersService {
   /** New confirmed transfers sent to one of OUR deposit addresses; everything else is ignored. */
   async fetchRelevant(
     network: CryptoNetwork,
-  ): Promise<{ transfers: ChainTransfer[]; cursor: string }> {
+  ): Promise<{ transfers: ChainTransfer[]; cursor: string; behind: boolean }> {
     const batch = await this.networks
       .source(network)
       .fetchConfirmedSince(await this.cursors.get(network));
@@ -38,6 +38,7 @@ export class ChainTransfersService {
     return {
       transfers: batch.transfers.filter((t) => ours.has(t.toMatchKey)),
       cursor: batch.cursor,
+      behind: batch.behind ?? false,
     };
   }
 

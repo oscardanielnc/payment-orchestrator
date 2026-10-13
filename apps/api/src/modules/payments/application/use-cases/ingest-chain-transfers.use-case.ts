@@ -16,8 +16,10 @@ export class IngestChainTransfersUseCase {
     private readonly inbound: InboundEventsService,
   ) {}
 
-  async execute(network: CryptoNetwork): Promise<{ relevant: number; ingested: number }> {
-    const { transfers, cursor } = await this.chain.fetchRelevant(network);
+  async execute(
+    network: CryptoNetwork,
+  ): Promise<{ relevant: number; ingested: number; behind?: true }> {
+    const { transfers, cursor, behind } = await this.chain.fetchRelevant(network);
     let ingested = 0;
     for (const transfer of transfers) {
       const { duplicate } = await this.inbound.receive({
@@ -29,6 +31,6 @@ export class IngestChainTransfersUseCase {
       if (!duplicate) ingested += 1;
     }
     await this.chain.commitCursor(network, cursor);
-    return { relevant: transfers.length, ingested };
+    return { relevant: transfers.length, ingested, ...(behind && { behind: true as const }) };
   }
 }

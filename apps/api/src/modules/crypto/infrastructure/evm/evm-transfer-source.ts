@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { TransferBatch, TransferSource } from '../../application/ports/transfer-source';
 import type { ChainTransfer } from '../../domain/chain-transfer';
 import type { CryptoNetwork } from '../../domain/network';
@@ -16,7 +15,6 @@ const FIRST_RUN_LOOKBACK_BLOCKS = 300n;
  * poll starts right after it, so nothing is skipped or read twice in normal operation.
  */
 export class EvmTransferSource extends TransferSource {
-  private readonly logger = new Logger(EvmTransferSource.name);
   private chainChecked = false;
 
   constructor(
@@ -45,7 +43,6 @@ export class EvmTransferSource extends TransferSource {
     if (from > confirmedHead) return { transfers: [], cursor: cursor ?? String(confirmedHead) };
 
     const last = min(confirmedHead, from + BLOCKS_PER_REQUEST * REQUESTS_PER_POLL - 1n);
-    if (last < confirmedHead) this.logger.warn('Behind the chain head; the next poll continues');
 
     const logs: EvmTransferLog[] = [];
     for (let start = from; start <= last; start += BLOCKS_PER_REQUEST) {
@@ -72,7 +69,7 @@ export class EvmTransferSource extends TransferSource {
       blockNumber: log.blockNumber,
       blockTimestamp: timestamps.get(log.blockNumber) ?? new Date(0),
     }));
-    return { transfers, cursor: String(last) };
+    return { transfers, cursor: String(last), behind: last < confirmedHead };
   }
 
   /** The policy checks the configured chain id; this checks the RPC really serves that chain. */

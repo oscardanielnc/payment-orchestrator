@@ -73,7 +73,7 @@ describe('EvmTransferSource', () => {
 
     expect(ranges).toEqual([[901n, 988n]]);
     expect(batch.transfers.map((t) => t.blockNumber)).toEqual([988n]); // 989 has 11 on top
-    expect(batch.cursor).toBe('988');
+    expect(batch).toMatchObject({ cursor: '988', behind: false });
   });
 
   it('starts a little in the past on the first run', async () => {
@@ -103,7 +103,7 @@ describe('EvmTransferSource', () => {
 
     expect(ranges).toHaveLength(10);
     expect(ranges[0]).toEqual([1n, 200n]);
-    expect(batch.cursor).toBe('2000');
+    expect(batch).toMatchObject({ cursor: '2000', behind: true });
   });
 
   it('refuses an RPC that serves another chain', async () => {
