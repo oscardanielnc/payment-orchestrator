@@ -142,7 +142,10 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     expect(await statusOf(charge.id)).toBe('succeeded');
     const stored = await prisma.paymentAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
     expect(stored.status).toBe('succeeded');
-    const events = await prisma.outboxEvent.findMany({ where: { aggregateId: charge.id } });
+    const events = await prisma.outboxEvent.findMany({
+      where: { aggregateId: charge.id },
+      orderBy: { occurredAt: 'asc' },
+    });
     expect(events.map((e) => e.type)).toEqual([
       'charge.created',
       'charge.processing',
