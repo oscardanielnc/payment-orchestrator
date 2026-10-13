@@ -15,4 +15,6 @@ export abstract class TransferSource {
   /** How often the worker polls this network. */
   abstract readonly pollIntervalMs: number;
   abstract fetchConfirmedSince(cursor: string | null): Promise<TransferBatch>;
+  /** Current balance of the watched token at an address, in minor units (reconciliation). */
+  abstract tokenBalance(address: string): Promise<bigint>;
 }

@@ -46,7 +46,10 @@ describe('Charges API (real Postgres)', () => {
     const charge = response.body as Charge;
 
     expect(charge).toMatchObject({ object: 'charge', status: 'pending', amount: '10000000' });
-    const events = await prisma.outboxEvent.findMany({ where: { aggregateId: charge.id } });
+    const events = await prisma.outboxEvent.findMany({
+      where: { aggregateId: charge.id },
+      orderBy: { occurredAt: 'asc' },
+    });
     expect(events.map((e) => e.type)).toEqual(['charge.created']);
   });
 

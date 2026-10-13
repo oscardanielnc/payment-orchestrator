@@ -8,6 +8,7 @@ import {
 } from './application/ports/crypto-repositories';
 import { ChainTransfersService } from './application/services/chain-transfers.service';
 import { DepositAddressesService } from './application/services/deposit-addresses.service';
+import { DepositBalancesService } from './application/services/deposit-balances.service';
 import { ConfiguredCryptoNetworks } from './infrastructure/configured-crypto-networks';
 import { viemChainReader } from './infrastructure/evm/evm-chain-reader';
 import { EvmTransferSource } from './infrastructure/evm/evm-transfer-source';
@@ -60,8 +61,9 @@ import { TronXpubAddressDeriver } from './infrastructure/tron/tron-xpub-address-
     { provide: ChainTransferRepository, useClass: PrismaChainTransferRepository },
     { provide: WatcherCursorRepository, useClass: PrismaWatcherCursorRepository },
     DepositAddressesService,
+    DepositBalancesService,
     ChainTransfersService,
   ],
-  exports: [CryptoNetworks, DepositAddressesService, ChainTransfersService],
+  exports: [CryptoNetworks, DepositAddressesService, DepositBalancesService, ChainTransfersService],
 })
 export class CryptoModule {}

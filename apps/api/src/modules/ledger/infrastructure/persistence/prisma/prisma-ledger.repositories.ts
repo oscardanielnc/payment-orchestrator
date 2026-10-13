@@ -11,7 +11,10 @@ import {
   type LedgerTransaction as TransactionRow,
 } from '../../../../../generated/prisma/client';
 import {
+  AccountActivity,
+  AccountActivityQuery,
   AccountTotals,
+  LedgerActivityReader,
   LedgerAccountRepository,
   LedgerBalanceReader,
   LedgerTransactionRepository,
@@ -165,5 +168,56 @@ export class PrismaLedgerBalanceReader extends LedgerBalanceReader {
       result.set(row.account_id, totals);
     }
     return result;
+  }
+}
+
+@Injectable()
+export class PrismaLedgerActivityReader extends LedgerActivityReader {
+  constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>) {
+    super();
+  }
+
+  async netDebits(query: AccountActivityQuery): Promise<AccountActivity[]> {
+    const keys = query.keys ?? [];
+    if (!query.window && keys.length === 0) return [];
+    // Column names cannot be parameters: pick from a fixed whitelist.
+    const key = Prisma.raw(query.groupBy === 'externalId' ? 't.external_id' : 't.reference');
+    const inWindow = query.window
+      ? Prisma.sql`${key} IN (
+          SELECT ${key} FROM ledger_entries e
+          JOIN ledger_transactions t ON t.id = e.transaction_id
+          JOIN ledger_accounts a ON a.id = e.account_id
+          WHERE a.code = ${query.accountCode} AND t.status = 'posted'
+            AND t.effective_at >= ${query.window.from} AND t.effective_at < ${query.window.to})`
+      : Prisma.sql`FALSE`;
+
+    // Sums as text so NUMERIC(78,0) never passes through a JavaScript number.
+    const rows = await this.txHost.tx.$queryRaw<
+      {
+        key: string;
+        organization_id: string | null;
+        reference: string | null;
+        currency: string;
+        net: string;
+      }[]
+    >`
+      SELECT ${key} AS key, MAX(t.organization_id::text) AS organization_id,
+             MAX(t.reference) AS reference, e.currency,
+             SUM(CASE WHEN e.direction = 'debit' THEN e.amount ELSE -e.amount END)::text AS net
+      FROM ledger_entries e
+      JOIN ledger_transactions t ON t.id = e.transaction_id
+      JOIN ledger_accounts a ON a.id = e.account_id
+      WHERE a.code = ${query.accountCode} AND t.status = 'posted' AND ${key} IS NOT NULL
+        AND (${inWindow} OR ${key} = ANY(${keys}))
+      GROUP BY ${key}, e.currency
+      ORDER BY ${key}`;
+
+    return rows.map((row) => ({
+      key: row.key,
+      organizationId: row.organization_id,
+      reference: row.reference,
+      currency: row.currency,
+      netDebits: BigInt(row.net),
+    }));
   }
 }

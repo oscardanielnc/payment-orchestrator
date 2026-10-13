@@ -30,6 +30,11 @@ const XPUB = HDKey.fromMasterSeed(mnemonicToSeedSync(TEST_MNEMONIC)).derive(
 class ScriptedTransferSource extends TransferSource {
   readonly network: CryptoNetwork = 'tron-nile';
   readonly pollIntervalMs = 10_000;
+  balances = new Map<string, bigint>();
+
+  tokenBalance(address: string): Promise<bigint> {
+    return Promise.resolve(this.balances.get(address) ?? 0n);
+  }
   transfers: ChainTransfer[] = [];
 
   fetchConfirmedSince(): Promise<TransferBatch> {
@@ -137,7 +142,10 @@ describe('USDT on TRON: attempt → deposit address → confirmed transfer → p
     expect(await statusOf(charge.id)).toBe('succeeded');
     const stored = await prisma.paymentAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
     expect(stored.status).toBe('succeeded');
-    const events = await prisma.outboxEvent.findMany({ where: { aggregateId: charge.id } });
+    const events = await prisma.outboxEvent.findMany({
+      where: { aggregateId: charge.id },
+      orderBy: { occurredAt: 'asc' },
+    });
     expect(events.map((e) => e.type)).toEqual([
       'charge.created',
       'charge.processing',

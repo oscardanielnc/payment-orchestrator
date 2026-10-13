@@ -46,6 +46,10 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
   'webhook_endpoint.not_found': HttpStatus.NOT_FOUND,
   'webhook_delivery.not_found': HttpStatus.NOT_FOUND,
   'webhook_delivery.invalid_cursor': HttpStatus.BAD_REQUEST,
+  'reconciliation_finding.not_found': HttpStatus.NOT_FOUND,
+  'reconciliation_finding.invalid_cursor': HttpStatus.BAD_REQUEST,
+  'reconciliation_finding.not_open': HttpStatus.CONFLICT,
+  'reconciliation.unknown_source': HttpStatus.BAD_REQUEST,
 };
 
 const TITLES: Record<number, string> = {

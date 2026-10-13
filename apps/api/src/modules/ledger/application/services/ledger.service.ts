@@ -10,7 +10,10 @@ import {
 } from '../../domain/ledger-account';
 import { LedgerTransaction } from '../../domain/ledger-transaction';
 import {
+  type AccountActivity,
+  type AccountActivityQuery,
   LedgerAccountRepository,
+  LedgerActivityReader,
   LedgerBalanceReader,
   LedgerTransactionRepository,
 } from '../ports/ledger-repositories';
@@ -61,6 +64,7 @@ export class LedgerService {
     private readonly accounts: LedgerAccountRepository,
     private readonly transactions: LedgerTransactionRepository,
     private readonly balances: LedgerBalanceReader,
+    private readonly activity: LedgerActivityReader,
     private readonly ids: IdGenerator,
     private readonly clock: Clock,
   ) {}
@@ -86,6 +90,11 @@ export class LedgerService {
     });
     await this.transactions.insert(transaction);
     return { transaction, created: true };
+  }
+
+  /** Net movement per business key on one account code (read-only; for reconciliation). */
+  netDebits(query: AccountActivityQuery): Promise<AccountActivity[]> {
+    return this.activity.netDebits(query);
   }
 
   async balancesFor(organizationId: string): Promise<AccountBalance[]> {

@@ -37,7 +37,7 @@ Every module is hexagonal ([ADR 0002](../adr/0002-hexagonal-modules.md)):
 | `checkout`       | Public read model and method choice for a payment link; composes charges, identity, payments               | —                                                      |
 | `ledger`         | Accounts, entries, balances                                                                                | `LedgerRepository`                                     |
 | `notifications`  | Outbound merchant webhooks: endpoints, deliveries, attempts ([ADR 0018](../adr/0018-outbound-webhooks.md)) | `WebhookSender`, `WebhookSigner`, `WebhookSecrets`     |
-| `reconciliation` | Provider vs ledger findings                                                                                | `ProviderStatement`                                    |
+| `reconciliation` | Provider vs ledger findings per source and day ([ADR 0021](../adr/0021-reconciliation.md))                 | `ReconciliationSource`, `FindingRepository`            |
 
 ### Rules between modules
 

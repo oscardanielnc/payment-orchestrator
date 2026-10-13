@@ -72,6 +72,11 @@ export class EvmTransferSource extends TransferSource {
     return { transfers, cursor: String(last), behind: last < confirmedHead };
   }
 
+  async tokenBalance(address: string): Promise<bigint> {
+    await this.ensureExpectedChain();
+    return this.options.reader.tokenBalance(this.options.token, address);
+  }
+
   /** The policy checks the configured chain id; this checks the RPC really serves that chain. */
   private async ensureExpectedChain(): Promise<void> {
     if (this.chainChecked) return;

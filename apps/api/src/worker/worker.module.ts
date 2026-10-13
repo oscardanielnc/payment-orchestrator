@@ -9,6 +9,8 @@ import { SharedModule } from '../shared/shared.module';
 import { ChainWatcherService } from './chain-watcher.service';
 import { ChargeExpiryService } from './charge-expiry.service';
 import { ProviderPaymentSyncService } from './provider-payment-sync.service';
+import { ReconciliationSchedulerService } from './reconciliation-scheduler.service';
+import { ReconciliationModule } from '../modules/reconciliation/reconciliation.module';
 import { QueueConsumersModule } from './queue-consumers.module';
 
 /** Background work (ADR 0003): chain watchers, queue consumers, outbox relay, sweeps. No HTTP. */
@@ -24,9 +26,15 @@ export class WorkerModule {
         CryptoModule,
         ChargesModule,
         PaymentsModule,
+        ReconciliationModule,
         QueueConsumersModule,
       ],
-      providers: [ChainWatcherService, ChargeExpiryService, ProviderPaymentSyncService],
+      providers: [
+        ChainWatcherService,
+        ChargeExpiryService,
+        ProviderPaymentSyncService,
+        ReconciliationSchedulerService,
+      ],
     };
   }
 }
