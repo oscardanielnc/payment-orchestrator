@@ -50,7 +50,10 @@ describe('TronGridTransferSource', () => {
   });
 
   it('re-reads one minute before the cursor and never moves the cursor backwards', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(Response.json({ data: [], meta: {} }));
+    // A fresh Response per call: the poll makes two requests (overlap, then forward).
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(() =>
+      Promise.resolve(Response.json({ data: [], meta: {} })),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const batch = await source.fetchConfirmedSince('1790892141000');
