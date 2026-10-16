@@ -50,13 +50,36 @@ describe('TronGridTransferSource', () => {
   });
 
   it('re-reads one minute before the cursor and never moves the cursor backwards', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(Response.json({ data: [], meta: {} }));
+    // A fresh Response per call: the poll makes two requests (overlap, then forward).
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(() =>
+      Promise.resolve(Response.json({ data: [], meta: {} })),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const batch = await source.fetchConfirmedSince('1790892141000');
 
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('min_block_timestamp=1790892081000');
     expect(batch.cursor).toBe('1790892141000');
+  });
+
+  it('moves past a minute busier than the whole page budget', async () => {
+    // Nile, 2026-10-12: over 4,000 transfers inside the re-read minute stalled the cursor.
+    const cursor = 1_791_801_024_000;
+    const fullPage = Array.from({ length: 200 }, (_, i) => event(i, cursor - 1_000));
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve(
+        url.includes('max_block_timestamp')
+          ? Response.json({ data: fullPage, meta: { fingerprint: 'more' } })
+          : Response.json({ data: [event(999, cursor + 3_000)], meta: {} }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const batch = await source.fetchConfirmedSince(String(cursor));
+
+    expect(batch.cursor).toBe(String(cursor + 3_000));
+    expect(batch.transfers.map((t) => t.txHash)).toContain('tx-999');
+    expect(batch.behind).toBe(false);
   });
 
   it('fails loudly on an HTTP error so the tick is retried', async () => {
