@@ -18,6 +18,8 @@ interface TronGridPage {
 
 const PAGE_SIZE = 200;
 const MAX_PAGES_PER_POLL = 20;
+/** Budget for re-reading the overlap; kept apart so a busy minute can never starve new pages. */
+const MAX_OVERLAP_PAGES = 20;
 const REQUEST_TIMEOUT_MS = 10_000;
 /** First run starts a little in the past instead of scanning the token's whole history. */
 const FIRST_RUN_LOOKBACK_MS = 10 * 60 * 1000;
@@ -26,8 +28,11 @@ const OVERLAP_MS = 60 * 1000;
 
 /**
  * TronGrid event API, `only_confirmed=true`: only events in solidified blocks, which TRON
- * guarantees will never be reverted. The cursor is the newest block timestamp already read;
- * the next poll re-reads from that millisecond and duplicates are dropped downstream.
+ * guarantees will never be reverted. The cursor is the newest block timestamp already read.
+ * Each poll re-reads the minute before the cursor on its own budget, then reads forward from
+ * the cursor with the full budget; duplicates are dropped downstream. Sharing one budget
+ * stalled the watcher for days when the Nile token had over 4,000 transfers in one minute
+ * (2026-10-12): every poll spent all its pages inside the overlap and the cursor never moved.
  */
 export class TronGridTransferSource extends TransferSource {
   readonly network: CryptoNetwork = 'tron-nile';
@@ -50,24 +55,35 @@ export class TronGridTransferSource extends TransferSource {
 
   async fetchConfirmedSince(cursor: string | null): Promise<TransferBatch> {
     const now = this.options.now ?? Date.now;
-    const since = cursor ? Number(cursor) - OVERLAP_MS : now() - FIRST_RUN_LOOKBACK_MS;
-    let url: string | null = this.firstPageUrl(since);
-    let newest = cursor ? Number(cursor) : since;
-    const transfers: ChainTransfer[] = [];
+    const from = cursor ? Number(cursor) : now() - FIRST_RUN_LOOKBACK_MS;
+    const late = cursor
+      ? await this.readPages({ since: from - OVERLAP_MS, until: from }, MAX_OVERLAP_PAGES)
+      : { events: [], more: false };
+    const fresh = await this.readPages({ since: from }, MAX_PAGES_PER_POLL);
 
-    for (let page = 0; url && page < MAX_PAGES_PER_POLL; page += 1) {
+    const newest = fresh.events.reduce((max, e) => Math.max(max, e.block_timestamp), from);
+    const transfers = [...late.events, ...fresh.events].map((event) => this.toTransfer(event));
+    return { transfers, cursor: String(newest), behind: fresh.more };
+  }
+
+  /** Events in [since, until], oldest first, up to `maxPages` pages; `more` if pages were left. */
+  private async readPages(
+    window: { since: number; until?: number },
+    maxPages: number,
+  ): Promise<{ events: TronGridEvent[]; more: boolean }> {
+    const first = this.pageUrl(window);
+    let url: string | null = first;
+    const events: TronGridEvent[] = [];
+    for (let page = 0; url && page < maxPages; page += 1) {
       const body = await this.get(url);
-      for (const event of body.data ?? []) {
-        transfers.push(this.toTransfer(event));
-        newest = Math.max(newest, event.block_timestamp);
-      }
+      events.push(...(body.data ?? []));
       const fingerprint = body.meta?.fingerprint;
       url =
         fingerprint && body.data?.length === PAGE_SIZE
-          ? `${this.firstPageUrl(since)}&fingerprint=${fingerprint}`
+          ? `${first}&fingerprint=${fingerprint}`
           : null;
     }
-    return { transfers, cursor: String(newest), behind: url !== null };
+    return { events, more: url !== null };
   }
 
   /** TRC-20 `balanceOf` as a read-only contract call (no transaction, no fee). */
@@ -94,14 +110,15 @@ export class TronGridTransferSource extends TransferSource {
     return BigInt(`0x${result}`);
   }
 
-  private firstPageUrl(sinceMs: number): string {
+  private pageUrl(window: { since: number; until?: number }): string {
     const params = new URLSearchParams({
       event_name: 'Transfer',
       only_confirmed: 'true',
       order_by: 'block_timestamp,asc',
       limit: String(PAGE_SIZE),
-      min_block_timestamp: String(sinceMs),
+      min_block_timestamp: String(window.since),
     });
+    if (window.until !== undefined) params.set('max_block_timestamp', String(window.until));
     return `${this.options.fullHost}/v1/contracts/${this.options.usdtContract}/events?${params.toString()}`;
   }
 
