@@ -7,7 +7,6 @@ interface Notification {
   id?: string | number;
   type?: string;
   action?: string;
-  live_mode?: boolean;
   data?: { id?: string | number };
 }
 
@@ -15,7 +14,8 @@ interface Notification {
  * Mercado Pago's `x-signature: ts=…,v1=…`: HMAC-SHA256 with the application's secret over the
  * manifest `id:<data.id>;request-id:<x-request-id>;ts:<ts>;` (parts whose value is missing are
  * left out, and an alphanumeric data.id is lowercased, per Mercado Pago's docs).
- * A live-mode notification is rejected too: this repository never runs live.
+ * `live_mode` is not checked: Mercado Pago marks test users' payments `live_mode: true` too
+ * (seen 2026-10-21). "Never live" is enforced at boot, where the token must be a test user's.
  */
 export class MercadoPagoWebhookVerifier extends WebhookVerifier {
   readonly provider = 'mercadopago';
@@ -51,9 +51,6 @@ export class MercadoPagoWebhookVerifier extends WebhookVerifier {
     const received = Buffer.from(parts.v1, 'hex');
     if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
       throw new InvalidWebhookSignatureError('x-signature does not match');
-    }
-    if (body.live_mode === true) {
-      throw new InvalidWebhookSignatureError('live-mode notification in a test-only deployment');
     }
 
     return {

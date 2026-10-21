@@ -49,9 +49,9 @@ describe('MercadoPagoWebhookVerifier', () => {
     ).toThrow('does not match');
   });
 
-  it('rejects live-mode notifications even when signed', () => {
+  it('accepts notifications marked live_mode, as Mercado Pago marks test users payments', () => {
     const { raw, headers } = signed({ ...notification, live_mode: true });
 
-    expect(() => verifier.verify(raw, headers)).toThrow('live-mode');
+    expect(verifier.verify(raw, headers).externalId).toBe('12345678901');
   });
 });

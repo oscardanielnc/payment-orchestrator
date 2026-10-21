@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Param, Post, Req } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Logger, Param, Post, Req } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
 import { ReceiveWebhookUseCase } from '../../application/use-cases/receive-webhook.use-case';
@@ -11,6 +11,8 @@ import { InvalidWebhookSignatureError } from '../../domain/errors';
  */
 @Controller('webhooks')
 export class WebhooksController {
+  private readonly logger = new Logger(WebhooksController.name);
+
   constructor(private readonly receive: ReceiveWebhookUseCase) {}
 
   @Post(':provider')
@@ -23,7 +25,15 @@ export class WebhooksController {
         Array.isArray(value) ? value.join(',') : value,
       ]),
     );
-    const result = await this.receive.execute({ provider, rawBody: request.rawBody, headers });
-    return { received: true, duplicate: result.duplicate };
+    try {
+      const result = await this.receive.execute({ provider, rawBody: request.rawBody, headers });
+      return { received: true, duplicate: result.duplicate };
+    } catch (error) {
+      // A rejected provider notification is otherwise silent (a 400 nobody reads): log the reason.
+      if (error instanceof InvalidWebhookSignatureError) {
+        this.logger.warn(`${provider} notification rejected: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }

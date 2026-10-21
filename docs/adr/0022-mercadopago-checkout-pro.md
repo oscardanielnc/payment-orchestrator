@@ -23,8 +23,9 @@ only say "payment X changed" and are signed with `x-signature`.
   float division) with `external_reference = attempt id`; instructions are `redirect` to `init_point`
 - At boot, `GET /users/me` must carry the `test_user` tag or the app refuses to start; if Mercado
   Pago cannot be asked, it does not start either (fail closed)
-- Notifications: `x-signature` HMAC-SHA256 over `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`,
-  live-mode rejected; the handler fetches the payment before changing state
+- Notifications: `x-signature` HMAC-SHA256 over `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`;
+  `live_mode` is not checked (test users' payments arrive `live_mode: true`); the handler fetches
+  the payment before changing state
 - `approved` → paid; `rejected`/`cancelled` → declined (the preference stays open, ADR 0016)
 - Status check (ADR 0019) and reconciliation (ADR 0021) search payments by external reference
 
