@@ -17,7 +17,7 @@ Second fiat provider. Proves the `PaymentProvider` port works for more than one 
 
 ## Acceptance criteria
 
-- [ ] A test-user payment moves the charge to `succeeded` and writes ledger entries
+- [x] A test-user payment moves the charge to `succeeded` and writes ledger entries
 - [x] A notification with an invalid signature is rejected
 - [x] Adding this adapter required no change in domain or use cases
 
