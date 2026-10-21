@@ -26,3 +26,4 @@ Template: [template.md](template.md).
 | [0019](0019-status-check-for-missed-webhooks.md)   | Status checks as a safety net for missed provider webhooks                     | Accepted |
 | [0020](0020-base-confirmations-and-evm-watcher.md) | Base Sepolia: 12 confirmations and a block-cursor log watcher                  | Accepted |
 | [0021](0021-reconciliation.md)                     | Reconciliation: daily windows, two-pass lookup, findings that never move money | Accepted |
+| [0022](0022-mercadopago-checkout-pro.md)           | Mercado Pago: Checkout Pro, attempt id as reference, test user checked at boot | Accepted |

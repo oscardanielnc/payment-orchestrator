@@ -108,6 +108,28 @@ describe('checkout page', () => {
     expect(screen.queryByText(ADDRESS)).not.toBeInTheDocument();
   });
 
+  it('sends Mercado Pago payments to its own checkout in a new tab', async () => {
+    const url = 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=pref-1';
+    current = session({
+      amount: '1500',
+      currency: 'PEN',
+      methods: ['mercadopago'],
+      status: 'processing',
+      attempt: {
+        method: 'mercadopago',
+        status: 'pending',
+        failureReason: null,
+        instructions: { type: 'redirect', url },
+      },
+    });
+    openCheckout();
+
+    const link = await screen.findByRole('link', { name: 'Continue to Mercado Pago' });
+    expect(link).toHaveAttribute('href', url);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('shows an expired link as expired, with no way to pay', async () => {
     current = session({ status: 'expired' });
     openCheckout();

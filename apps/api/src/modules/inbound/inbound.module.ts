@@ -7,6 +7,7 @@ import {
   ReceiveWebhookUseCase,
   WEBHOOK_VERIFIERS,
 } from './application/use-cases/receive-webhook.use-case';
+import { MercadoPagoWebhookVerifier } from './infrastructure/signatures/mercadopago-webhook.verifier';
 import { StripeWebhookVerifier } from './infrastructure/signatures/stripe-webhook.verifier';
 import { PrismaInboundEventRepository } from './infrastructure/persistence/prisma/prisma-inbound-event.repository';
 import { WebhooksController } from './presentation/http/webhooks.controller';
@@ -31,6 +32,9 @@ import { WebhooksController } from './presentation/http/webhooks.controller';
                 config.stripe.webhookSecret,
               ),
             ]
+          : []),
+        ...(config.mercadopago
+          ? [new MercadoPagoWebhookVerifier(config.mercadopago.webhookSecret)]
           : []),
       ],
     },

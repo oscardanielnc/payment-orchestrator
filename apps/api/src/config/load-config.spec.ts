@@ -114,10 +114,26 @@ describe('loadConfig', () => {
     ).toEqual([expect.stringContaining('BASE_USDC_CONTRACT')]);
   });
 
-  it('keeps Mercado Pago disabled until its rule exists', () => {
-    expect(problemsFor({ ...validEnv, MERCADOPAGO_ACCESS_TOKEN: 'TEST-placeholder' })).toEqual([
-      expect.stringContaining('MERCADOPAGO_ACCESS_TOKEN'),
+  it('accepts Mercado Pago credentials only together and in a test-token format', () => {
+    const token = 'APP_USR-placeholder'; // gitleaks:allow (format only, not a credential)
+    expect(problemsFor({ ...validEnv, MERCADOPAGO_ACCESS_TOKEN: token })).toEqual([
+      expect.stringContaining('MERCADOPAGO_WEBHOOK_SECRET'),
     ]);
+    expect(
+      problemsFor({
+        ...validEnv,
+        MERCADOPAGO_ACCESS_TOKEN: 'not-a-token',
+        MERCADOPAGO_WEBHOOK_SECRET: 'placeholder',
+      }),
+    ).toEqual([expect.stringContaining('MERCADOPAGO_ACCESS_TOKEN')]);
+
+    const config = loadConfig({
+      ...validEnv,
+      MERCADOPAGO_ACCESS_TOKEN: token,
+      MERCADOPAGO_WEBHOOK_SECRET: 'placeholder',
+    });
+    // Whether the token belongs to a test user is asked to Mercado Pago at boot (ADR 0022).
+    expect(config.mercadopago).toEqual({ accessToken: token, webhookSecret: 'placeholder' });
   });
 
   it('reports every missing required variable at once', () => {
