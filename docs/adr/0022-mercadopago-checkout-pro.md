@@ -29,6 +29,14 @@ only say "payment X changed" and are signed with `x-signature`.
 - `approved` → paid; `rejected`/`cancelled` → declined (the preference stays open, ADR 0016)
 - Status check (ADR 0019) and reconciliation (ADR 0021) search payments by external reference
 
+## Learned in the first real payments (2026-10-21)
+
+- The test credentials belong to the test seller's own application, not to the developer's app:
+  that application signs the notifications, so the secret must come from its Webhooks page
+- Test users' payments are `live_mode: true` and are notified to the production-mode URL
+- Until the secret was right, the status check settled every payment; the first valid
+  notification then answered `already-settled`
+
 ## Consequences
 
 - No change in domain or use cases: one adapter, one handler, one verifier, one recon source
