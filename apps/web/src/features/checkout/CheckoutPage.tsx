@@ -125,10 +125,35 @@ function PayPanel({ token, session }: { token: string; session: CheckoutSession 
           publishableKey={session.stripePublishableKey}
           onConfirmed={refresh}
         />
+      ) : attempt?.instructions.type === 'redirect' ? (
+        <RedirectInstructions url={attempt.instructions.url} />
       ) : (
         !attempt && <p className="text-sm text-muted">Choose how you want to pay.</p>
       )}
     </section>
+  );
+}
+
+/**
+ * Checkout Pro (ADR 0022): the customer pays on Mercado Pago's own page. A new tab keeps this
+ * one open, polling, so it turns to "Payment received" by itself.
+ */
+function RedirectInstructions({ url }: { url: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex w-max items-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-accent"
+      >
+        Continue to Mercado Pago
+      </a>
+      <p className="text-sm text-muted">
+        Opens Mercado Pago&apos;s test checkout in a new tab. Pay with a test account; this page
+        updates by itself.
+      </p>
+    </div>
   );
 }
 

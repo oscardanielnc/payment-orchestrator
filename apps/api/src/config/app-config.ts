@@ -6,6 +6,12 @@ export interface StripeConfig {
   publishableKey: string;
 }
 
+/** Checkout Pro with a test seller's credentials (ADR 0022). */
+export interface MercadoPagoConfig {
+  accessToken: string;
+  webhookSecret: string;
+}
+
 export interface TronConfig {
   fullHost: string;
   apiKey: string | undefined;
@@ -63,6 +69,7 @@ export class AppConfig {
     readonly auth: AuthConfig,
     readonly checkoutBaseUrl: string,
     readonly webhooks: WebhooksConfig,
+    readonly mercadopago: MercadoPagoConfig | undefined = undefined,
   ) {}
 
   static fromEnv(env: Env): AppConfig {
@@ -124,6 +131,13 @@ export class AppConfig {
         backoffMs: env.WEBHOOK_BACKOFF_MS,
         allowLocalHttp: env.NODE_ENV !== 'production',
       },
+      // Enabled only with both values; the test-user check runs when the payments module starts.
+      env.MERCADOPAGO_ACCESS_TOKEN && env.MERCADOPAGO_WEBHOOK_SECRET
+        ? {
+            accessToken: env.MERCADOPAGO_ACCESS_TOKEN,
+            webhookSecret: env.MERCADOPAGO_WEBHOOK_SECRET,
+          }
+        : undefined,
     );
   }
 }

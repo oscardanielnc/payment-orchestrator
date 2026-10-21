@@ -15,6 +15,7 @@ export const BASE_SEPOLIA_USDC_CONTRACTS = ['0x036CbD53842c5426634e7929541eC2318
 
 const STRIPE_TEST_KEY = /^(sk|rk)_test_/;
 const STRIPE_TEST_PUBLISHABLE_KEY = /^pk_test_/;
+const MERCADOPAGO_TOKEN = /^(APP_USR|TEST)-/;
 
 export interface PolicyViolation {
   variable: keyof Env;
@@ -62,14 +63,27 @@ export function checkPaymentsPolicy(env: Env): PolicyViolation[] {
     });
   }
 
-  for (const variable of ['MERCADOPAGO_ACCESS_TOKEN', 'MERCADOPAGO_WEBHOOK_SECRET'] as const) {
-    if (env[variable] !== undefined) {
-      violations.push({
-        variable,
-        reason:
-          'Mercado Pago stays disabled until its test-credential rule is decided (feature 12)',
-      });
-    }
+  // Mercado Pago test tokens look like live ones (APP_USR-), so the format only rules out
+  // garbage; whether the token belongs to a test user is asked to Mercado Pago at boot (ADR 0022).
+  if (
+    env.MERCADOPAGO_ACCESS_TOKEN !== undefined &&
+    !MERCADOPAGO_TOKEN.test(env.MERCADOPAGO_ACCESS_TOKEN)
+  ) {
+    violations.push({
+      variable: 'MERCADOPAGO_ACCESS_TOKEN',
+      reason: "must be a test seller's access token (APP_USR- or TEST-)",
+    });
+  }
+
+  if (
+    (env.MERCADOPAGO_ACCESS_TOKEN === undefined) !==
+    (env.MERCADOPAGO_WEBHOOK_SECRET === undefined)
+  ) {
+    violations.push({
+      variable: 'MERCADOPAGO_WEBHOOK_SECRET',
+      reason:
+        'and MERCADOPAGO_ACCESS_TOKEN go together; without the secret no notification is trusted',
+    });
   }
 
   if (env.TRON_FULL_HOST !== undefined) {
