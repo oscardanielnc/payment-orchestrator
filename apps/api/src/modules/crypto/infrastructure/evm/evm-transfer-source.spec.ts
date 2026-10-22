@@ -82,13 +82,19 @@ describe('EvmTransferSource', () => {
   });
 
   it('starts a little in the past on the first run', async () => {
-    const { reader, ranges } = fakeChain(1000n);
+    const { reader, ranges } = fakeChain(3000n);
 
-    expect((await source(reader).fetchConfirmedSince(null)).cursor).toBe('988');
-    expect(ranges).toEqual([
-      [688n, 887n],
-      [888n, 988n],
-    ]);
+    expect((await source(reader).fetchConfirmedSince(null)).cursor).toBe('2988');
+    expect(ranges[0]).toEqual([1488n, 1687n]);
+    expect(ranges.at(-1)).toEqual([2888n, 2988n]);
+  });
+
+  it('starts at block 0 on a chain younger than the lookback', async () => {
+    const { reader, ranges } = fakeChain(100n);
+
+    await source(reader).fetchConfirmedSince(null);
+
+    expect(ranges).toEqual([[0n, 88n]]);
   });
 
   it('asks nothing when no new block is confirmed yet', async () => {

@@ -1,6 +1,6 @@
 # 0020. Base Sepolia: 12 confirmations and a block-cursor log watcher
 
-- Status: Accepted
+- Status: Accepted; default confirmations superseded by [0023](0023-base-confirmations-by-time.md)
 - Date: 2026-10-09
 
 ## Context

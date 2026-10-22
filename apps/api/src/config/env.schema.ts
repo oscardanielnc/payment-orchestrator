@@ -70,7 +70,7 @@ export const envSchema = z.object({
     z.string().regex(/^xpub[1-9A-HJ-NP-Za-km-z]{107}$/, 'must be an xpub'),
   ),
   /** Blocks on top of a transfer before it counts as paid (ADR 0020). */
-  BASE_CONFIRMATIONS: z.coerce.number().int().min(1).max(1000).default(12),
+  BASE_CONFIRMATIONS: z.coerce.number().int().min(1).max(1000).default(120),
   BASE_POLL_INTERVAL_MS: z.coerce.number().int().min(1000).default(10_000),
 });
 

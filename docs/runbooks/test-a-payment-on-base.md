@@ -29,7 +29,7 @@ Check: `pnpm --filter @po/api base:payer balance`.
    pnpm --filter @po/api base:payer pay <address> 1000000   # 1 USDC (6 decimals)
    ```
 
-4. About 30 s later (12 confirmations + one poll) the checkout shows **Paid**; the charge's ledger has
+4. About 30 s later (120 confirmations of 0.2 s + one poll) the checkout shows **Paid**; the charge's ledger has
    `Deposits on base-sepolia → Awaiting settlement → Available`
 
 Try `pay <address> 400000` then `pay <address> 600000` to see an underpayment complete.

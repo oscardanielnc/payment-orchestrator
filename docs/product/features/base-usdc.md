@@ -11,7 +11,7 @@ Second network behind the same `BlockchainWatcher` port, using viem.
 
 - Same rules as [USDT on TRON Nile](tron-usdt.md): per-charge address from an extended public key, exact/under/over payment handling, no transaction applied twice
 - Detects ERC-20 `Transfer` logs of the configured USDC contract
-- Confirmed after `BASE_CONFIRMATIONS` blocks, default 12 ([ADR 0020](../../adr/0020-base-confirmations-and-evm-watcher.md))
+- Confirmed after `BASE_CONFIRMATIONS` blocks, default 120, about 24 s ([ADR 0023](../../adr/0023-base-confirmations-by-time.md))
 - Chain id 84532 enforced by the environment guard and checked against the RPC; only Circle's test USDC contract is accepted
 
 ## Acceptance criteria

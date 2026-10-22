@@ -71,7 +71,7 @@ flowchart LR
 | Never touching real money                   | An environment guard that fails closed on live keys, mainnet hosts or foreign token contracts ([ADR 0006](docs/adr/0006-environment-policy.md))                                                                              |
 | Adding a provider without touching the core | Hexagonal modules with abstract-class ports; routing is a data table, not `if`s. Base was two adapters and config ([ADR 0002](docs/adr/0002-hexagonal-modules.md), [0015](docs/adr/0015-payment-providers-and-routing.md))   |
 
-22 architecture decisions, including the discarded options, live in [docs/adr](docs/adr/README.md).
+23 architecture decisions, including the discarded options, live in [docs/adr](docs/adr/README.md).
 
 ## Features
 

@@ -102,7 +102,7 @@ describe('loadConfig', () => {
       BASE_USDC_CONTRACT: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       BASE_DEPOSIT_XPUB: `xpub${'1'.repeat(107)}`, // gitleaks:allow (shape only, not a key)
     });
-    expect(config.base).toMatchObject({ chainId: 84532, confirmations: 12 });
+    expect(config.base).toMatchObject({ chainId: 84532, confirmations: 120 });
   });
 
   it('rejects a Base USDC contract other than the Sepolia test token', () => {
