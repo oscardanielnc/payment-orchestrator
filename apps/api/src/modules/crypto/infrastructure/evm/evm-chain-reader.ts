@@ -1,4 +1,12 @@
-import { createPublicClient, erc20Abi, http, parseAbiItem } from 'viem';
+import {
+  BaseError,
+  createPublicClient,
+  erc20Abi,
+  http,
+  LimitExceededRpcError,
+  parseAbiItem,
+  ResponseBodyTooLargeError,
+} from 'viem';
 
 /** One ERC-20 `Transfer` log, already decoded. */
 export interface EvmTransferLog {
@@ -10,6 +18,14 @@ export interface EvmTransferLog {
   value: bigint;
   /** Newer nodes include it in the log; otherwise the source asks for the block. */
   blockTimestamp?: Date;
+}
+
+/** The node will not answer this many logs at once; a smaller range may work. */
+export class LogRangeTooLargeError extends Error {
+  constructor(fromBlock: bigint, toBlock: bigint, options?: ErrorOptions) {
+    super(`eth_getLogs answer too large for blocks ${fromBlock}-${toBlock}`, options);
+    this.name = 'LogRangeTooLargeError';
+  }
 }
 
 /** The JSON-RPC calls the watcher needs: small enough to fake in tests. */
@@ -29,17 +45,28 @@ const TRANSFER = parseAbiItem(
 export function viemChainReader(rpcUrl: string): EvmChainReader {
   // Every outbound call has a timeout (standard, section 8); viem retries transient errors.
   const client = createPublicClient({ transport: http(rpcUrl, { timeout: 10_000 }) });
+  // viem retries a too-large answer, downloading 10 MB again each time; split it at once instead.
+  // Any other failure just fails this poll, and the watcher polls again shortly.
+  const logsClient = createPublicClient({
+    transport: http(rpcUrl, { timeout: 10_000, retryCount: 0 }),
+  });
   return {
     chainId: () => client.getChainId(),
     headBlock: () => client.getBlockNumber({ cacheTime: 0 }),
     async transferLogs(token, fromBlock, toBlock) {
-      const logs = await client.getLogs({
-        address: token as `0x${string}`,
-        event: TRANSFER,
-        fromBlock,
-        toBlock,
-        strict: true,
-      });
+      const logs = await logsClient
+        .getLogs({
+          address: token as `0x${string}`,
+          event: TRANSFER,
+          fromBlock,
+          toBlock,
+          strict: true,
+        })
+        .catch((error: unknown) => {
+          throw isTooManyLogs(error)
+            ? new LogRangeTooLargeError(fromBlock, toBlock, { cause: error })
+            : error;
+        });
       return logs.map((log) => ({
         transactionHash: log.transactionHash,
         logIndex: log.logIndex,
@@ -64,4 +91,16 @@ export function viemChainReader(rpcUrl: string): EvmChainReader {
         args: [address as `0x${string}`],
       }),
   };
+}
+
+/** A burst of token activity can push 200 blocks of logs past viem's 10 MB body limit. */
+function isTooManyLogs(error: unknown): boolean {
+  return (
+    error instanceof BaseError &&
+    Boolean(
+      error.walk(
+        (e) => e instanceof ResponseBodyTooLargeError || e instanceof LimitExceededRpcError,
+      ),
+    )
+  );
 }
