@@ -19,7 +19,9 @@ export function CheckoutPage() {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <TestModeBanner networks={['Stripe test', 'TRON Nile', 'Base Sepolia']} />
+      <TestModeBanner
+        networks={['Stripe test', 'Mercado Pago test', 'TRON Nile', 'Base Sepolia']}
+      />
       <main className="mx-auto flex max-w-md flex-col gap-4 px-4 py-10">
         {checkout.isPending ? (
           <Skeleton rows={4} label="Loading payment" />
@@ -38,7 +40,8 @@ export function CheckoutPage() {
           <Session token={token} session={checkout.data} />
         )}
         <p className="text-center text-xs text-muted">
-          Test environment: no real money moves. Cards use Stripe test mode; crypto uses testnets.
+          Test environment: no real money moves. Cards use Stripe test mode, Mercado Pago uses test
+          users, crypto uses testnets.
         </p>
       </main>
     </div>

@@ -46,7 +46,9 @@ export function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <TestModeBanner networks={['Stripe test', 'TRON Nile', 'Base Sepolia']} />
+      <TestModeBanner
+        networks={['Stripe test', 'Mercado Pago test', 'TRON Nile', 'Base Sepolia']}
+      />
       <main className="mx-auto flex max-w-sm flex-col gap-6 px-4 py-16">
         <div>
           <h1 className="text-2xl font-bold">Sign in</h1>
