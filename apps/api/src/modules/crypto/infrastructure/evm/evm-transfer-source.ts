@@ -7,11 +7,11 @@ import {
   LogRangeTooLargeError,
 } from './evm-chain-reader';
 
-/** sepolia.base.org caps eth_getLogs at 200 blocks (about 7 minutes on Base). */
+/** sepolia.base.org caps eth_getLogs at 200 blocks (about 40 s of 0.2 s blocks). */
 const BLOCKS_PER_REQUEST = 200n;
 const REQUESTS_PER_POLL = 10n;
-/** First run starts a little in the past instead of scanning the whole token history. */
-const FIRST_RUN_LOOKBACK_BLOCKS = 300n;
+/** First run starts about 5 minutes in the past instead of scanning the whole token history. */
+const FIRST_RUN_LOOKBACK_BLOCKS = 1500n;
 
 /**
  * ERC-20 `Transfer` logs of one token, read only up to `head - confirmations` (ADR 0020):
@@ -43,7 +43,7 @@ export class EvmTransferSource extends TransferSource {
     await this.ensureExpectedChain();
 
     const confirmedHead = (await reader.headBlock()) - BigInt(this.options.confirmations);
-    const from = cursor ? BigInt(cursor) + 1n : confirmedHead - FIRST_RUN_LOOKBACK_BLOCKS;
+    const from = cursor ? BigInt(cursor) + 1n : max(0n, confirmedHead - FIRST_RUN_LOOKBACK_BLOCKS);
     if (from > confirmedHead) return { transfers: [], cursor: cursor ?? String(confirmedHead) };
 
     const last = min(confirmedHead, from + BLOCKS_PER_REQUEST * REQUESTS_PER_POLL - 1n);
@@ -109,4 +109,5 @@ export class EvmTransferSource extends TransferSource {
 }
 
 const min = (a: bigint, b: bigint) => (a < b ? a : b);
+const max = (a: bigint, b: bigint) => (a > b ? a : b);
 const bareHex = (address: string) => address.toLowerCase().replace(/^0x/, '');
