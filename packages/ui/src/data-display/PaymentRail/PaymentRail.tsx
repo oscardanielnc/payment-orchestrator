@@ -20,7 +20,7 @@ export function PaymentRail({ stations }: { stations: Station[] }) {
         <li
           key={station.label}
           aria-current={station.state === 'current' ? 'step' : undefined}
-          className="relative grid justify-items-center gap-2 text-center"
+          className="relative grid content-start justify-items-center gap-2 text-center"
         >
           {index > 0 && (
             <span

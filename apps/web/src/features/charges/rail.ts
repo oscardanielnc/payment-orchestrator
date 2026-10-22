@@ -8,6 +8,14 @@ const METHOD_LABEL: Record<string, string> = {
   usdc_base: 'USDC · Base',
 };
 
+/** Who confirmed the payment: a webhook from the provider, or our own chain watcher. */
+const CONFIRMED_BY: Record<string, string> = {
+  stripe: 'Stripe',
+  mercadopago: 'Mercado Pago',
+  tron: 'TRON Nile',
+  base: 'Base Sepolia',
+};
+
 /**
  * Builds the payment rail from real data only (docs/design/direction.md):
  *   Created → Routed → Paid → Posted, or ending in Failed / Expired.
@@ -41,7 +49,7 @@ export function railStations(
       label: 'Paid',
       state: paid ? 'done' : attempt ? 'current' : 'upcoming',
       detail: paid
-        ? undefined
+        ? attempt && (CONFIRMED_BY[attempt.provider] ?? attempt.provider)
         : attempt?.failureReason
           ? `Declined: ${attempt.failureReason}`
           : undefined,
