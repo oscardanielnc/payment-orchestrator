@@ -23,7 +23,9 @@ counts as paid, and how to read logs through a public RPC.
 - The cursor is the last block read; the next poll starts at cursor + 1 (no overlap needed: the blocks
   read are already confirmed). First run looks back 300 blocks
 - `eth_getLogs` in 200-block requests (the public `sepolia.base.org` limit), 10 per poll. A poll that
-  stops short of the head reports `behind` and the worker reads again after 500 ms until caught up
+  stops short of the head reports `behind` and the worker reads again after 500 ms until caught up.
+  A range whose answer is too large (viem's 10 MB body limit, or the node's log limit) is halved
+  until it fits, so a busy stretch of USDC cannot stall the cursor
 - The RPC's `eth_chainId` must be 84532 before the first read, on top of the env policy check
 - `(txHash, logIndex)` is the transfer's identity; the log's `blockTimestamp` is used when the node
   sends it, so we do not fetch blocks for the many transfers that are not ours

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { EvmChainReader, EvmTransferLog } from './evm-chain-reader';
+import {
+  type EvmChainReader,
+  type EvmTransferLog,
+  LogRangeTooLargeError,
+} from './evm-chain-reader';
 import { EvmTransferSource } from './evm-transfer-source';
 
 const USDC = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
@@ -105,6 +109,33 @@ describe('EvmTransferSource', () => {
     expect(ranges).toHaveLength(10);
     expect(ranges[0]).toEqual([1n, 200n]);
     expect(batch).toMatchObject({ cursor: '2000', behind: true });
+  });
+
+  it('halves a range whose logs are too large to answer at once', async () => {
+    const { reader, ranges } = fakeChain(1000n, [log(950n), log(980n)]);
+    const read = reader.transferLogs.bind(reader);
+    reader.transferLogs = (token, from, to) =>
+      to - from >= 40n
+        ? Promise.reject(new LogRangeTooLargeError(from, to))
+        : read(token, from, to);
+
+    const batch = await source(reader).fetchConfirmedSince('900');
+
+    expect(ranges).toEqual([
+      [901n, 922n],
+      [923n, 944n],
+      [945n, 966n],
+      [967n, 988n],
+    ]);
+    expect(batch.transfers.map((t) => t.blockNumber)).toEqual([950n, 980n]);
+    expect(batch).toMatchObject({ cursor: '988', behind: false });
+  });
+
+  it('gives up on a single block the node still cannot answer', async () => {
+    const { reader } = fakeChain(1000n);
+    reader.transferLogs = (_token, from, to) => Promise.reject(new LogRangeTooLargeError(from, to));
+
+    await expect(source(reader).fetchConfirmedSince('987')).rejects.toThrow(LogRangeTooLargeError);
   });
 
   it('refuses an RPC that serves another chain', async () => {
