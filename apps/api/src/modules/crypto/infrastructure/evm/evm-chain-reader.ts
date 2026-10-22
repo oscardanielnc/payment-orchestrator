@@ -45,11 +45,16 @@ const TRANSFER = parseAbiItem(
 export function viemChainReader(rpcUrl: string): EvmChainReader {
   // Every outbound call has a timeout (standard, section 8); viem retries transient errors.
   const client = createPublicClient({ transport: http(rpcUrl, { timeout: 10_000 }) });
+  // viem retries a too-large answer, downloading 10 MB again each time; split it at once instead.
+  // Any other failure just fails this poll, and the watcher polls again shortly.
+  const logsClient = createPublicClient({
+    transport: http(rpcUrl, { timeout: 10_000, retryCount: 0 }),
+  });
   return {
     chainId: () => client.getChainId(),
     headBlock: () => client.getBlockNumber({ cacheTime: 0 }),
     async transferLogs(token, fromBlock, toBlock) {
-      const logs = await client
+      const logs = await logsClient
         .getLogs({
           address: token as `0x${string}`,
           event: TRANSFER,
