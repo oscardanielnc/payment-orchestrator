@@ -20,7 +20,9 @@ export interface AppShellProps {
 export function AppShell({ organizationName, nav, renderLink, userSlot, children }: AppShellProps) {
   return (
     <div className="min-h-dvh bg-bg">
-      <TestModeBanner networks={['Stripe test', 'TRON Nile', 'Base Sepolia']} />
+      <TestModeBanner
+        networks={['Stripe test', 'Mercado Pago test', 'TRON Nile', 'Base Sepolia']}
+      />
       <div className="grid min-h-[calc(100dvh-28px)] grid-cols-1 min-[900px]:grid-cols-[232px_minmax(0,1fr)]">
         <aside className="flex flex-col gap-5 border-b border-line bg-surface px-3 py-4 min-[900px]:border-r min-[900px]:border-b-0">
           <div className="px-2">

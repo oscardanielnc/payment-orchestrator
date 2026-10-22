@@ -66,7 +66,8 @@ function CardForm({ onConfirmed }: { onConfirmed: () => void }) {
 
   return (
     <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-4">
-      <PaymentElement />
+      {/* Link would also offer bank debits and Klarna, which the "Card" button never promised */}
+      <PaymentElement options={{ layout: 'tabs', wallets: { link: 'never' } }} />
       {error && (
         <p role="alert" className="text-sm text-danger">
           {error}
