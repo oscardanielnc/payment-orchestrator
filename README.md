@@ -5,20 +5,39 @@
 ![Test mode only](https://img.shields.io/badge/money-test%20mode%20%26%20testnets%20only-orange)
 
 One API and a hosted payment link for merchants. A payment is routed to **Stripe** (cards),
-**USDT on TRON** or **USDC on Base**, confirmed by webhook or on-chain, and recorded in a
-**double-entry ledger**. A daily job reconciles every provider against that ledger.
+**Mercado Pago**, **USDT on TRON** or **USDC on Base**, confirmed by webhook or on-chain, and
+recorded in a **double-entry ledger**. A daily job reconciles every provider against that ledger.
+
+[![Watch the 2-minute demo](docs/media/demo-poster.png)](https://oscarnavarro.dev/walkthroughs/payment-orchestrator.mp4)
+
+<p align="center">
+  <img src="docs/media/checkout-card.gif" width="420" alt="A customer pays a payment link with Stripe's test card and the checkout confirms the payment" />
+</p>
 
 **Test mode and testnets only.** The app refuses to start with live keys or a mainnet network, and
 mainnets are not even representable in its types.
 
 ## Verified on real test networks
 
-| Rail                   | Evidence                                                                                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Card, Stripe test mode | Approved, declined then retried, and canceled payments; lost webhooks covered by a status check                                                                                                                           |
-| USDT TRC-20, TRON Nile | [1 USDT payment](https://nile.tronscan.org/#/transaction/e99ab52f660356e77dab9f7898118f792a725ad282966833085a0c730ab5c994), paid about 70 s after sending (block solidified)                                              |
-| USDC, Base Sepolia     | [1 USDC payment](https://sepolia.basescan.org/tx/0x2ce2a60279b731a27c710966c39c0a141075c8866bf41bdc413e60f2bc3eaae0), paid 37 s after sending (12 confirmations)                                                          |
-| Reconciliation         | A [transfer the watcher had not read](https://sepolia.basescan.org/tx/0xe63159baf9677eab7cd1c5564f0d82e23169dc26633f4ab43aeb99c77bd5f12d) opened an `amount_mismatch` finding, which cleared once the watcher recorded it |
+| Rail                     | Evidence                                                                                                                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Card, Stripe test mode   | Approved, declined then retried, and canceled payments; lost webhooks covered by a status check                                                                                                                           |
+| Mercado Pago, test users | Four approved Checkout Pro payments; while the notifications were being rejected, the status check settled all four, and reconciliation matched 4 of 4                                                                    |
+| USDT TRC-20, TRON Nile   | [1 USDT payment](https://nile.tronscan.org/#/transaction/e99ab52f660356e77dab9f7898118f792a725ad282966833085a0c730ab5c994), paid about 70 s after sending (block solidified)                                              |
+| USDC, Base Sepolia       | [1 USDC payment](https://sepolia.basescan.org/tx/0x2ce2a60279b731a27c710966c39c0a141075c8866bf41bdc413e60f2bc3eaae0), paid 37 s after sending (12 confirmations)                                                          |
+| Reconciliation           | A [transfer the watcher had not read](https://sepolia.basescan.org/tx/0xe63159baf9677eab7cd1c5564f0d82e23169dc26633f4ab43aeb99c77bd5f12d) opened an `amount_mismatch` finding, which cleared once the watcher recorded it |
+
+## Screenshots
+
+All taken from the running app in test mode. The merchant is a demo coffee shop.
+
+| Merchant dashboard                                                                                         | Charge timeline and its ledger postings                                                                                  |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| ![Charges list with card, USDC, USDT and PEN payments in several states](docs/media/dashboard-charges.png) | ![A succeeded charge with its timeline, Stripe attempt and balanced double-entry postings](docs/media/charge-detail.png) |
+| **Hosted checkout: card**                                                                                  | **Hosted checkout: USDT on TRON Nile**                                                                                   |
+| ![Stripe card form filled with the public test card](docs/media/checkout-card.png)                         | ![Exact amount, a fresh deposit address and its QR code](docs/media/checkout-crypto.png)                                 |
+
+![Webhook deliveries: a delivery that got a 500, was retried, and was delivered](docs/media/webhooks.png)
 
 ## How a payment flows
 
@@ -29,13 +48,14 @@ flowchart LR
     CO --> API
     API -- route by method --> P{Provider}
     P -- card --> S[Stripe]
+    P -- redirect --> MP[Mercado Pago<br/>Checkout Pro]
     P -- crypto --> D[Fresh deposit address<br/>derived from an xpub]
-    S -- signed webhook --> IN[Inbound pipeline<br/>verify · store raw · 2xx · queue]
+    S & MP -- signed webhook --> IN[Inbound pipeline<br/>verify · store raw · 2xx · queue]
     D -. chain watcher .-> IN
     IN --> W[Worker<br/>idempotent settlement]
     W --> L[(Double-entry ledger)]
     W -- outbox --> WH[Signed merchant webhooks<br/>with retries]
-    R[Daily reconciliation] -. compares .-> S & D & L
+    R[Daily reconciliation] -. compares .-> S & MP & D & L
 ```
 
 ## Engineering highlights
@@ -51,26 +71,27 @@ flowchart LR
 | Never touching real money                   | An environment guard that fails closed on live keys, mainnet hosts or foreign token contracts ([ADR 0006](docs/adr/0006-environment-policy.md))                                                                              |
 | Adding a provider without touching the core | Hexagonal modules with abstract-class ports; routing is a data table, not `if`s. Base was two adapters and config ([ADR 0002](docs/adr/0002-hexagonal-modules.md), [0015](docs/adr/0015-payment-providers-and-routing.md))   |
 
-21 architecture decisions, including the discarded options, live in [docs/adr](docs/adr/README.md).
+22 architecture decisions, including the discarded options, live in [docs/adr](docs/adr/README.md).
 
 ## Features
 
-| Feature                                                                | Status                                |
-| ---------------------------------------------------------------------- | ------------------------------------- |
-| Charges API with a state machine, idempotency and keyset pagination    | Done                                  |
-| Dashboard sign-in with rotating refresh tokens, owner and member roles | Done                                  |
-| Cards through Stripe test mode                                         | Done                                  |
-| USDT on TRON Nile, USDC on Base Sepolia                                | Done                                  |
-| Payment links with a hosted checkout                                   | Done                                  |
-| Signed outbound webhooks with retries                                  | Done                                  |
-| Daily reconciliation with findings                                     | Done                                  |
-| Mercado Pago                                                           | Planned (waiting on test credentials) |
+| Feature                                                                | Status |
+| ---------------------------------------------------------------------- | ------ |
+| Charges API with a state machine, idempotency and keyset pagination    | Done   |
+| Dashboard sign-in with rotating refresh tokens, owner and member roles | Done   |
+| Cards through Stripe test mode                                         | Done   |
+| USDT on TRON Nile, USDC on Base Sepolia                                | Done   |
+| Payment links with a hosted checkout                                   | Done   |
+| Signed outbound webhooks with retries                                  | Done   |
+| Daily reconciliation with findings                                     | Done   |
+| Mercado Pago Checkout Pro, test users only                             | Done   |
 
 Specs and acceptance criteria: [docs/product/features](docs/product/features/README.md).
 
 ## Stack
 
-**API:** NestJS 11, Prisma 7 on Postgres, BullMQ on Redis, Zod contracts, Stripe SDK, viem, TronWeb.
+**API:** NestJS 11, Prisma 7 on Postgres, BullMQ on Redis, Zod contracts, Stripe and Mercado Pago SDKs,
+viem, TronWeb.
 **Web:** React 19, Vite, React Router, TanStack Query, Zustand, Tailwind 4, Storybook.
 **Quality:** Vitest unit and e2e tests (Testcontainers Postgres), ESLint with module boundaries,
 gitleaks on every commit and in CI. Turborepo + pnpm monorepo.
