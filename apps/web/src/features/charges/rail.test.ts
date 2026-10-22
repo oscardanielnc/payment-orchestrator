@@ -16,7 +16,7 @@ const charge = (status: Charge['status']): Charge => ({
   updatedAt: '2026-10-04T12:00:00.000Z',
 });
 const attempt = (status: PaymentAttempt['status'], failureReason: string | null = null) =>
-  ({ id: 'a1', method: 'usdt_tron', status, failureReason }) as PaymentAttempt;
+  ({ id: 'a1', method: 'usdt_tron', provider: 'tron', status, failureReason }) as PaymentAttempt;
 const postedAvailable = { status: 'posted', account: 'merchant:org-1:available' } as LedgerEntry;
 
 const states = (stations: { label: string; state: string }[]) =>
@@ -50,6 +50,12 @@ describe('railStations', () => {
     expect(
       states(railStations(charge('succeeded'), [attempt('succeeded')], [postedAvailable])),
     ).toEqual(['Created:done', 'Routed:done', 'Paid:done', 'Posted:done']);
+  });
+
+  it('names who confirmed the payment', () => {
+    expect(
+      railStations(charge('succeeded'), [attempt('succeeded')], [postedAvailable])[2],
+    ).toMatchObject({ label: 'Paid', detail: 'TRON Nile' });
   });
 
   it('ends in Failed for a failed charge', () => {
